@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+data-cleaning.R
+*.qmd
+*.png
+messing_around.R
+Week 4 Figure.R
