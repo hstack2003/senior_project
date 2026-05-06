@@ -1,5 +1,6 @@
 library(readxl)
 library(tidyverse)
+library(dplyr)
 
 # School Directories
 
@@ -8,9 +9,11 @@ direct_counties <- read_xlsx("IDOE_Data/2005 School Directory.xlsx",
 
 school_direct_2005 <- read_xlsx("IDOE_Data/2005 School Directory.xlsx",
                                 sheet = "Directory") |> 
-  select(!(PHONE:PRINC_LNAME)) |> 
   left_join(direct_counties,
-            by = join_by(COUNTY == COUNTY_CODE))
+            by = join_by(COUNTY == COUNTY_CODE)) |> 
+  select(SCHL, CORP, NAME, COUNTY_NAME) |> 
+  distinct(SCHL, 
+           .keep_all = TRUE)
 
 corp_direct_2005 <- read_xlsx("IDOE_Data/2005 School Directory.xlsx",
                              sheet = 1) |> 
@@ -23,13 +26,12 @@ school_direct_2025 <- read_xlsx("IDOE_Data/2025-2026-school-directory-2025-10-27
 npschool_direct_2025 <- read_xlsx("IDOE_Data/2025-2026-school-directory-2025-10-27.xlsx",
                                 sheet = "NPSCHL") 
 
-all_schools_2025 <- bind_rows(school_direct_2025,
-          npschool_direct_2025)
-
-all_schools_2025 |> 
+all_school_directory <- bind_rows(school_direct_2025,
+          npschool_direct_2025) |> 
   full_join(school_direct_2005,
             by = join_by(IDOE_SCHOOL_ID == SCHL))
 
+# check which schools are not in istep data but not 2005-2007 or 2025 directories
 istep_math_data |> 
   anti_join(school_direct_2005,
             by = join_by(IDOE_SCHOOL_ID == SCHL)) |> 
@@ -52,10 +54,22 @@ att_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP 02062
                       sheet = "ATT RATE")
 
 istep_math_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP 02062026_v1.xlsx",
-                      sheet = "ISTEP+ MATH")
+                      sheet = "ISTEP+ MATH") |> 
+  mutate(subject = "Math")
 
 istep_ela_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP 02062026_v1.xlsx",
-                             sheet = "ISTEP+ ELA")
+                             sheet = "ISTEP+ ELA") |> 
+  mutate(subject = "ELA")
+
+#make istep all dataset with county info
+
+istep_all <- istep_ela_data |> 
+  bind_rows(istep_math_data) |> 
+  left_join(school_direct_2005,
+            by = join_by(IDOE_SCHOOL_ID == SCHL)) |> 
+  filter_out(Proficient == "***") |> 
+  mutate(Proficient = as.numeric(Proficient))
+
 
 # Controls
 
