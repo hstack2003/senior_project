@@ -106,7 +106,10 @@ sch_finance_2000_2010 <- bind_rows(sch_finance_2000,
                                    sch_finance_2007,
                                    sch_finance_2008,
                                    sch_finance_2009,
-                                   sch_finance_2010)
+                                   sch_finance_2010) |> 
+  rename(fips_county = CONUM) |> 
+  mutate(fips_county = str_remove(fips_county,
+                                  pattern = "18"))
 
 # save as excel file
 write_xlsx(sch_finance_2000_2010, "sch_finance_2000_2010.xlsx")

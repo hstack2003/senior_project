@@ -2,7 +2,6 @@ library(readxl)
 library(tidyverse)
 library(tidyr)
 
-
 population_data_2000_2010 <- read_xlsx("Census_Data_Population/intercensal00s.xlsx",
           skip = 2,
           col_names = c("County",

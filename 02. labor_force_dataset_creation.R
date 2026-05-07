@@ -30,6 +30,7 @@ lf_data_2000_2010 <- bind_rows(lf_data_2000,
                                lf_data_2008,
                                lf_data_2009,
                                lf_data_2010) |> 
-  filter(`State FIPS Code` == 18) 
+  filter(`State FIPS Code` == 18) |> 
+  rename(fips_county = `County FIPS Code`)
 
 write_xlsx(lf_data_2000_2010, "lf_data_2000_2010.xlsx")

@@ -150,7 +150,11 @@ saipe_2000_2010 <- bind_rows(saipe_2000,
                              saipe_2008,
                              saipe_2009,
                              saipe_2009,
-                             saipe_2010)
+                             saipe_2010) |> 
+  mutate(fips_county = str_pad(fips_county,
+                               width = 3,
+                               side = "left",
+                               pad = "0"))
 
 # save as an excel file
 write_xlsx(saipe_2000_2010, "saipe_2000_2010.xlsx")
