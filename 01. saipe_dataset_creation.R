@@ -149,7 +149,6 @@ saipe_2000_2010 <- bind_rows(saipe_2000,
                              saipe_2007,
                              saipe_2008,
                              saipe_2009,
-                             saipe_2009,
                              saipe_2010) |> 
   mutate(fips_county = str_pad(fips_county,
                                width = 3,
