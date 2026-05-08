@@ -77,6 +77,8 @@ istep_all <- istep_ela_data |>
 #enroll_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP 02062026_v1.xlsx",
 #sheet = "ENROLLMENT")
 
+# Ethnicity / FRL
+
 ethnicity_FRL_2006 <- read_xlsx("IDOE_Data/school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-26-final.xlsx",
           sheet = "2006") |>
   mutate(year = 2006,
@@ -107,3 +109,44 @@ ethnicity_frl_2006_2010 <- bind_rows(ethnicity_FRL_2006,
                                      ethnicity_FRL_2008,
                                      ethnicity_FRL_2009,
                                      ethnicity_FRL_2010)
+
+# ELL / Special Ed
+
+"school-enrollment-ell-special-education-2006-25-updated (1).xlxs"
+
+ell_spec_ed_2006 <- read_xlsx("IDOE_Data/school-enrollment-ell-special-education-2006-25-updated (1).xlsx",
+                                sheet = "2006") |> 
+  mutate(year = 2006,
+         .after = `School Name`)
+
+ell_spec_ed_2007 <- read_xlsx("IDOE_Data/school-enrollment-ell-special-education-2006-25-updated (1).xlsx",
+                              sheet = "2007") |> 
+  mutate(year = 2007,
+         .after = `School Name`)
+
+ell_spec_ed_2008 <- read_xlsx("IDOE_Data/school-enrollment-ell-special-education-2006-25-updated (1).xlsx",
+                              sheet = "2008") |> 
+  mutate(year = 2008,
+         .after = `School Name`)
+
+ell_spec_ed_2009 <- read_xlsx("IDOE_Data/school-enrollment-ell-special-education-2006-25-updated (1).xlsx",
+                              sheet = "2009") |> 
+  mutate(year = 2009,
+         .after = `School Name`)
+
+ell_spec_ed_2010 <- read_xlsx("IDOE_Data/school-enrollment-ell-special-education-2006-25-updated (1).xlsx",
+                              sheet = "2010") |> 
+  mutate(year = 2010,
+         .after = `School Name`)
+
+ell_special_ed_2006_2010 <- bind_rows(ell_spec_ed_2006,
+                                      ell_spec_ed_2007,
+                                      ell_spec_ed_2008,
+                                      ell_spec_ed_2009,
+                                      ell_spec_ed_2010)
+
+# Join Ethnicity/FRL data with ELL / Special Ed
+
+eth_frl_ell_special_ed_2000_2010 <- ethnicity_frl_2006_2010 |> 
+  left_join(ell_special_ed_2006_2010,
+            by = join_by(`Schl ID`, year))
