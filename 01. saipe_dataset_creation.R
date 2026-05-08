@@ -157,3 +157,13 @@ saipe_2000_2010 <- bind_rows(saipe_2000,
 
 # save as an excel file
 write_xlsx(saipe_2000_2010, "saipe_2000_2010.xlsx")
+
+# create a County FIPS / Name key for later use
+county_fips_key <- saipe_2000 |> 
+  select(fips_county, county_name) |> 
+  mutate(fips_county = str_pad(fips_county, 
+                               width = 3,
+                               side = "left",
+                               pad = "0"),
+         county_name = str_remove(county_name,
+                                  pattern = "\\sCounty"))
