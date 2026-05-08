@@ -149,4 +149,4 @@ ell_special_ed_2006_2010 <- bind_rows(ell_spec_ed_2006,
 
 eth_frl_ell_special_ed_2006_2010 <- ethnicity_frl_2006_2010 |> 
   left_join(ell_special_ed_2006_2010,
-            by = join_by(`Schl ID`, year))
+            by = join_by(`Schl ID`, year, `Corp ID`, `Corp Name`))
