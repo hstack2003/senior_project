@@ -76,3 +76,34 @@ istep_all <- istep_ela_data |>
 #wait for now until load in other ethnicity data
 #enroll_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP 02062026_v1.xlsx",
 #sheet = "ENROLLMENT")
+
+ethnicity_FRL_2006 <- read_xlsx("IDOE_Data/school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-26-final.xlsx",
+          sheet = "2006") |>
+  mutate(year = 2006,
+         .after = `Schl Name`)
+
+ethnicity_FRL_2007 <- read_xlsx("IDOE_Data/school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-26-final.xlsx",
+                                sheet = "2007") |>
+  mutate(year = 2007,
+         .after = `Schl Name`)
+
+ethnicity_FRL_2008 <- read_xlsx("IDOE_Data/school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-26-final.xlsx",
+                                sheet = "2008") |>
+  mutate(year = 2008,
+         .after = `Schl Name`)
+
+ethnicity_FRL_2009 <- read_xlsx("IDOE_Data/school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-26-final.xlsx",
+                                sheet = "2009") |>
+  mutate(year = 2009,
+         .after = `Schl Name`)          
+
+ethnicity_FRL_2010 <- read_xlsx("IDOE_Data/school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-26-final.xlsx",
+                                sheet = "2010") |>
+  mutate(year = 2010,
+         .after = `Schl Name`)
+
+ethnicity_frl_2006_2010 <- bind_rows(ethnicity_FRL_2006,
+                                     ethnicity_FRL_2007,
+                                     ethnicity_FRL_2008,
+                                     ethnicity_FRL_2009,
+                                     ethnicity_FRL_2010)
