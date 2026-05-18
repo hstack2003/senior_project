@@ -18,7 +18,9 @@ population_data_2000_2010 <- read_xlsx("Census_Data_Population/intercensal00s.xl
                         "2009",
                         "2010_census",
                         "2010")) |> 
+  select(!ends_with("_census")) |> 
   filter(if_all(everything(), ~ !is.na(.))) |> 
-  pivot_longer(cols = `2000_census`:`2010`,
+  pivot_longer(cols = `2000`:`2010`,
                names_to = "year",
-               values_to = "population")
+               values_to = "population") |> 
+  mutate(year = as.numeric(year))

@@ -61,6 +61,12 @@ istep_ela_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP
                              sheet = "ISTEP+ ELA") |> 
   mutate(subject = "ELA")
 
+#define treatment and control counties
+treated_counites <- c("Daviess", "Dubois", "Knox", "Martin", "Pike")
+control_counties <- c("Sullivan", "Vigo", "Clay", "Greene", "Monroe", 
+                      "Lawrence", "Jackson", "Washington", "Orange", 
+                      "Crawford", "Harrison", "Owen")
+
 #make istep all dataset with county info
 
 istep_all <- istep_ela_data |> 
@@ -68,7 +74,10 @@ istep_all <- istep_ela_data |>
   left_join(school_direct_2005,
             by = join_by(IDOE_SCHOOL_ID == SCHL)) |> 
   filter_out(Proficient == "***") |> 
-  mutate(Proficient = as.numeric(Proficient))
+  mutate(`Proficient %`= as.numeric(`Proficient %`),
+         treatment = case_when(COUNTY_NAME %in% control_counties ~ 0,
+                               COUNTY_NAME %in% treated_counites & SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 1,
+                               COUNTY_NAME %in% treated_counites & !SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 0))
 
 
 # Controls
