@@ -43,20 +43,22 @@ ggsave("2006_map.png",
 to_central <- ymd("2006-04-01") # April 2006
 back_to_eastern <- ymd("2007-11-01")  # November 2007
 # Make Plots
-proficieny_EMH_year_plot <- istep_all |> 
+# By age group (EMH)
+proficiency_EMH_year_plot <-
+istep_all |> 
   mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ "Treatment",
                              COUNTY_NAME %in% control_counties ~ "Control"), 
          age_range = fct(case_when(GRADE_CODE %in% c("03", "04", "05") ~ "Elementary",
                                    GRADE_CODE %in% c("06", "07", "08") ~ "Middle",
                                    GRADE_CODE %in% c("09", "10") ~ "High School")),
          age_range = fct_relevel(age_range,
-                                 c("Elementary", "Middle", "High School"))) |> 
+                                 c("Elementary", "Middle", "High School")),) |> 
   filter(treated == "Treatment" | treated == "Control") |> 
   group_by(treated, subject, SCHOOL_YEAR_ID, age_range) |> # edit age range vs grade here
   summarise(Tested = sum(Tested),
             Proficient = sum(Proficient),
             .groups = "drop") |> 
-  mutate(percent_proficient = Proficient / Tested,
+  mutate(percent_proficient = (Proficient / Tested)*100,
          year_date = as.Date(paste0(SCHOOL_YEAR_ID, "-09-01"))) |>
   ggplot(mapping = aes(x = year_date,
                        y = percent_proficient, 
@@ -70,13 +72,55 @@ proficieny_EMH_year_plot <- istep_all |>
              color = "black") +
   geom_vline(xintercept = back_to_eastern,
              linetype = "dashed",
-             color = "black") 
+             color = "black") + 
+  labs(title = "Subject Proficiency Rates for Elemenentary, Middle, and High Schoolers",
+       subtitle = "Percent Proficient",
+       y = NULL,
+       x = "Year",
+       caption = "placeholder",
+       color = "Group")
 
-ggsave("proficieny_EMH_year.png",
-       plot = proficieny_EMH_year_plot,
+ggsave("proficiency_EMH_year.png",
+       plot = proficiency_EMH_year_plot,
        width = 10,
        height = 8,
        dpi = 300)
 
+# By grade (3-10)
+proficiency_grade_year_plot <- 
+istep_all |> 
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ "Treatment",
+                             COUNTY_NAME %in% control_counties ~ "Control")) |> 
+  filter(treated == "Treatment" | treated == "Control") |> 
+  group_by(treated, subject, SCHOOL_YEAR_ID, GRADE_CODE) |> # edit age range vs grade here
+  summarise(Tested = sum(Tested),
+            Proficient = sum(Proficient),
+            .groups = "drop") |> 
+  mutate(percent_proficient = (Proficient / Tested)*100,
+         year_date = as.Date(paste0(SCHOOL_YEAR_ID, "-09-01"))) |>
+  ggplot(mapping = aes(x = year_date,
+                       y = percent_proficient, 
+                       color = treated)) +
+  geom_point() + 
+  geom_line() +
+  facet_grid(cols = vars(subject),
+             rows = vars(GRADE_CODE)) + # chose age range or grade again here
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black") + 
+  labs(title = "Subject Proficiency Rates by Grade", # edit grade vs EMH
+       subtitle = "Percent Proficient",
+       y = NULL,
+       x = "Year",
+       caption = "placeholder",
+       color = "Group")
 
+ggsave("proficiency_grade_year.png",
+       plot = proficiency_grade_year_plot,
+       width = 10,
+       height = 8,
+       dpi = 300)
   
