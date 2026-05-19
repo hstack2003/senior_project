@@ -38,5 +38,45 @@ ggsave("2006_map.png",
        height = 8,
        dpi = 300)
 
+# Proficiency Rate Figures
+# Define time zone changes
+to_central <- ymd("2006-04-01") # April 2006
+back_to_eastern <- ymd("2007-11-01")  # November 2007
+# Make Plots
+proficieny_EMH_year_plot <- istep_all |> 
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ "Treatment",
+                             COUNTY_NAME %in% control_counties ~ "Control"), 
+         age_range = fct(case_when(GRADE_CODE %in% c("03", "04", "05") ~ "Elementary",
+                                   GRADE_CODE %in% c("06", "07", "08") ~ "Middle",
+                                   GRADE_CODE %in% c("09", "10") ~ "High School")),
+         age_range = fct_relevel(age_range,
+                                 c("Elementary", "Middle", "High School"))) |> 
+  filter(treated == "Treatment" | treated == "Control") |> 
+  group_by(treated, subject, SCHOOL_YEAR_ID, age_range) |> # edit age range vs grade here
+  summarise(Tested = sum(Tested),
+            Proficient = sum(Proficient),
+            .groups = "drop") |> 
+  mutate(percent_proficient = Proficient / Tested,
+         year_date = as.Date(paste0(SCHOOL_YEAR_ID, "-09-01"))) |>
+  ggplot(mapping = aes(x = year_date,
+                       y = percent_proficient, 
+                       color = treated)) +
+  geom_point() + 
+  geom_line() +
+  facet_grid(cols = vars(subject),
+             rows = vars(age_range)) + # chose age range or grade again here
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black") 
+
+ggsave("proficieny_EMH_year.png",
+       plot = proficieny_EMH_year_plot,
+       width = 10,
+       height = 8,
+       dpi = 300)
+
 
   
