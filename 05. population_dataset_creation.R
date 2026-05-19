@@ -1,6 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(tidyr)
+source("04. idoe_datasets_creation.R")
 
 population_data_2000_2010 <- read_xlsx("Census_Data_Population/intercensal00s.xlsx",
           skip = 2,

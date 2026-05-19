@@ -1,6 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(writexl)
+source("01. saipe_dataset_creation.R")
 
 # import annual BLS Local Area Unemployment data
 # source: https://www.bls.gov/lau/tables.htm#cntyaa

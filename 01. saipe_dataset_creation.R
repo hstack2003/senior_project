@@ -153,7 +153,8 @@ saipe_2000_2010 <- bind_rows(saipe_2000,
   mutate(fips_county = str_pad(fips_county,
                                width = 3,
                                side = "left",
-                               pad = "0"))
+                               pad = "0"),
+         percent_pov = percent_pov/100)
 
 # save as an excel file
 write_xlsx(saipe_2000_2010, "saipe_2000_2010.xlsx")

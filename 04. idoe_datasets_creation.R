@@ -1,6 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(dplyr)
+source("03. school_finance_dataset_creation.R")
 
 # School Directories
 

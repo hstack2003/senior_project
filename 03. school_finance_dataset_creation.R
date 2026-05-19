@@ -1,6 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(writexl)
+source("02. labor_force_dataset_creation.R")
 
 # import Annual Survey of School System Finances (US Census Bureau) data 
 # source: https://www.census.gov/programs-surveys/school-finances/data/tables.html
