@@ -18,8 +18,10 @@ map_data <- saipe_2000_2010 |>
   mutate(county_name = str_trim(str_extract(county_name,
                                             pattern = ".+\\s")),
          treated = case_when(county_name %in% treated_counites ~ "Treatment",
-                             county_name %in% control_counties ~ "Control")) |> 
-  filter(treated == "Treatment" | treated == "Control") |> 
+                             county_name %in% control_counties ~ "Control",
+                             .default = "Not in study"),
+         treated = fct_relevel(treated, 
+                               c("Treatment", "Control", "Not in study"))) |> 
   mutate(fips = fips_county,
          fips = paste0("18", fips_county))
 
@@ -27,6 +29,9 @@ map_2006 <- plot_usmap(data = map_data,
            regions = "counties",
            values = "treated",
            include = "IN") +
+  scale_fill_manual(values = c("Treatment" = "orange2",
+                               "Control" = "steelblue",
+                               "Not in study" = "gray")) +
   labs(title = "2006 Time Zone Change",
        caption = "Treated counties Daviess, Dubois, Knox, Martin, Perry, and Pike move to Central time zone on April 2, 2006 \nwhile surrounding control counties (pink) remain in the Eastern time zone") +
   theme(legend.position = "left",

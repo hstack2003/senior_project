@@ -76,9 +76,11 @@ istep_all <- istep_ela_data |>
             by = join_by(IDOE_SCHOOL_ID == SCHL)) |> 
   filter_out(Proficient == "***") |> 
   mutate(`Proficient %`= as.numeric(`Proficient %`),
+         Proficient = as.numeric(Proficient),
+         Tested = as.numeric(Tested),
          treatment = case_when(COUNTY_NAME %in% control_counties ~ 0,
                                COUNTY_NAME %in% treated_counites & SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 1,
-                               COUNTY_NAME %in% treated_counites & !SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 0))
+                               COUNTY_NAME %in% treated_counites & !SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 0),)
 
 
 # Controls
@@ -159,4 +161,8 @@ ell_special_ed_2006_2010 <- bind_rows(ell_spec_ed_2006,
 
 eth_frl_ell_special_ed_2006_2010 <- ethnicity_frl_2006_2010 |> 
   left_join(ell_special_ed_2006_2010,
-            by = join_by(`Schl ID`, year, `Corp ID`, `Corp Name`))
+            by = join_by(`Schl ID`, year, `Corp ID`, `Corp Name`)) |> 
+  mutate(white_percent = White/`TOTAL ENROLLMENT`,
+         free_meals_percent = `Free Meals`/`TOTAL ENROLLMENT`,
+         reduced_meals_percent = `Reduced Price Meals`/`TOTAL ENROLLMENT`,
+         free_reduced_meal_percent = (`Free Meals`+`Reduced Price Meals`)/`TOTAL ENROLLMENT`)
