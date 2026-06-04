@@ -1,0 +1,303 @@
+---
+title: "random_analysis"
+format: html
+editor: source
+---
+
+```{r}
+library(modelsummary)
+library(estimatr) # use later for summary stats table
+library(usmap)
+library(usmapdata)
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+library(knitr)
+library(gt)
+```
+# Map
+
+```{r}
+tes_map_data <- saipe_2000_2010 |> 
+  mutate(fips_county = str_pad(fips_county,
+                               width = 3,
+                               side = c("left"),
+                               pad = "0"),
+         year = as.numeric(year)) |> 
+  left_join(lf_data_2000_2010, 
+            by = join_by(fips_county, year)) |> 
+  mutate(treated = case_when(str_trim(str_extract(county_name,
+                                         pattern = ".+\\s")) %in% treated_counites ~ "treatment",
+                             str_trim(str_extract(county_name,
+                                         pattern = ".+\\s")) %in% control_counties ~ "control")) |> 
+  mutate(fips = fips_county,
+         fips = paste0("18", fips_county))
+  
+plot_usmap(data = tes_map_data,
+           regions = "counties",
+           values = "treated",
+           include = "IN") +
+  theme(legend.position = "left") +
+  labs(title = "2006 Time Zone Change") 
+
+#subtitle = "Treated counties Daviess, Dubois, Knox, Martin, Perry, and Pike \nmove to Central time zone on April 2, 2006 while surrounding control counties (pink) \nremain in the Eastern time zone"
+
+```
+
+```{r}
+county_map <- map_data("county")
+
+county_fips_key |> 
+  mutate(order = as.numeric(str_remove(fips_county,
+                             pattern = "^0+")),
+         treated = case_when(COUNTY_NAME %in% treated_counites ~ "treatment",
+                             COUNTY_NAME %in% control_counties ~ "control")) |> 
+  right_join(county_map, "order") |> 
+  ggplot(aes(x = long, y = lat, order = order,
+             fill = treated)) +
+  geom_polygon(color = "grey25",
+               linewidth = .1) +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(0, 0, 0, 0, "cm"))
+```
+
+# Figure - All Grades
+
+```{r}
+to_central <- ymd("2006-04-01") # April 2006
+
+back_to_eastern <- ymd("2007-11-01")  # November 2007
+
+istep_all |> 
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ "treatment",
+                             COUNTY_NAME %in% control_counties ~ "control")) |> 
+  filter(treated == "treatment" | treated == "control") |> 
+  group_by(treated, subject, SCHOOL_YEAR_ID, GRADE_CODE) |> 
+  summarise(Tested = sum(Tested),
+            Proficient = sum(Proficient),
+            .groups = "drop") |> 
+  mutate(percent_proficient = Proficient / Tested,
+         year_date = as.Date(paste0(SCHOOL_YEAR_ID, "-09-01"))) |>
+  ggplot(mapping = aes(x = year_date,
+                       y = percent_proficient, 
+                       color = treated,
+                       linetype = treated)) +
+  geom_point() + 
+  geom_line() +
+  facet_grid(cols = vars(subject),
+             rows = vars(GRADE_CODE)) + 
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black")
+
+```
+
+# Figure - EMH
+```{r}
+istep_all |> 
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ "treatment",
+                             COUNTY_NAME %in% control_counties ~ "control"),
+         age_range = fct(case_when(GRADE_CODE %in% c("03", "04", "05") ~ "Elementary",
+                               GRADE_CODE %in% c("06", "07", "08") ~ "Middle",
+                               GRADE_CODE %in% c("09", "10") ~ "High School")),
+         age_range = fct_relevel(age_range,
+                                 c("Elementary", "Middle", "High School"))) |> 
+  filter(treated == "treatment" | treated == "control") |> 
+  group_by(treated, subject, SCHOOL_YEAR_ID, age_range) |> # edit age range vs grade here
+  summarise(Tested = sum(Tested),
+            Proficient = sum(Proficient),
+            .groups = "drop") |> 
+  mutate(percent_proficient = Proficient / Tested,
+         year_date = as.Date(paste0(SCHOOL_YEAR_ID, "-09-01"))) |>
+  ggplot(mapping = aes(x = year_date,
+                       y = percent_proficient, 
+                       color = treated)) +
+  geom_point() + 
+  geom_line() +
+  facet_grid(cols = vars(subject),
+             rows = vars(age_range)) + # chose age range or grade again here
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black") 
+```
+
+# Summary Stats
+
+## Fall ISTEP+ Counts
+```{r}
+istep_all |> 
+  filter(TEST_PERIOD == "Fall ISTEP+") |> 
+  group_by(SCHOOL_YEAR_ID) |> 
+  summarise(count = n())
+
+```
+
+## Proficiency Stats by Subject
+```{r}
+istep_all |> 
+  filter(SCHOOL_YEAR_ID == 2005) |> 
+  group_by(subject) |> 
+  summarise(Count = n(),
+            Mean = sum(Proficient)/sum(Tested),
+            SD = sd(`Proficient %`, na.rm = TRUE),
+            Min = min(`Proficient %`, na.rm = TRUE),
+            Q1 = quantile(`Proficient %`, 0.25, na.rm = TRUE),
+            Median = median(`Proficient %`, na.rm = TRUE),
+            Q3 = quantile(`Proficient %`, 0.75, na.rm = TRUE),
+            Max = max(`Proficient %`, na.rm = TRUE))
+```
+
+## New Vars
+
+```{r}
+# Proficiency Rates from 2005 (pre-treatment)
+quartile_levels = c("very low", "low", "high", "very high")
+
+prof_levels_2005 <- istep_all |> 
+  filter(SCHOOL_YEAR_ID == 2005) |> 
+  group_by(IDOE_SCHOOL_ID, subject) |> 
+  summarise(prof_rate_2005 = sum(Proficient)/sum(Tested),
+            .groups = "drop") |> 
+  mutate(prof_level = factor(ntile(prof_rate_2005, 4),
+                            labels = quartile_levels)) 
+
+# FRL Status and % White from 2006
+cov_levels_2006 <- eth_frl_ell_special_ed_2006_2010 |>
+  filter(year == 2006) |> 
+  mutate(white_level = factor(ntile(white_percent, 4),
+                            labels = quartile_levels),
+         free_reduced_level = factor(ntile(free_reduced_meal_percent, 4),
+                            labels = quartile_levels),
+         free_meal_level = factor(ntile(free_meals_percent, 4),
+                            labels = quartile_levels),
+         reduced_meal_level = factor(ntile(reduced_meals_percent, 4),
+                            labels = quartile_levels)) |> 
+  select(`Schl ID`, white_level, free_reduced_level, free_meal_level, reduced_meal_level)
+```
+
+# Join New Vars
+
+```{r}
+istep_all |> 
+  left_join(prof_levels_2005, 
+            by = join_by(IDOE_SCHOOL_ID, subject)) |> 
+  left_join(cov_levels_2006, 
+            by = join_by(IDOE_SCHOOL_ID == `Schl ID`)) |> 
+  summary()
+```
+# County Pop Comparison
+```{r}
+population_data_2000_2010 |> 
+  filter_out(County == "Vigo" | County == "Monroe") |> 
+  mutate(treated = case_when(County %in% treated_counites ~ "treatment",
+                   County %in% control_counties ~ "control")) |> 
+  filter(year == 2005,
+         !is.na(treated)) |> 
+  group_by(treated) |> 
+  summarise(mean = mean(population),
+            total = sum(population),
+            median = median(population),
+            min = min(population),
+            max = max(population))
+
+# Vigo and Monroe both very large (over 100K) compared to other counties in study. Unclear whether it is an issue. Could run analysis with and without. 
+```
+
+# Draft - Prof. Sum. Stats
+```{r}
+istep_did_data |>
+  group_by(treated, post_treat) |> 
+  summarise(Mean = mean(`Proficient %`),
+            SD = sd(`Proficient %`),
+            .groups = "drop") |> 
+  pivot_wider(names_from = treated,
+              values_from = c(Mean, SD)) |> 
+  select(post_treat, Mean_1, SD_1, Mean_0, SD_0)
+  
+```
+
+# Draft - Cov. Sum. Stats
+
+```{r}
+eth_frl_ell_special_ed_2006_2010 |> 
+  left_join(county_fips_key, join_by(`Schl ID` == IDOE_SCHOOL_ID)) |> 
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ 1,
+                   COUNTY_NAME %in% control_counties ~ 0)) |> 
+  filter(treated == 0 | treated ==1) |> 
+  group_by(treated, year) |> 
+  summarise(`Mean Special Education` = mean(`Special Education %`),
+            `Mean ELL` = mean(`ELL %`),
+            `Mean Proportion White` = mean(white_percent),
+            `Mean Free and Reduced Meals Percent` = mean(free_reduced_meal_percent, na.rm = TRUE),
+            `Mean Free Meal Percent` = mean(free_meals_percent, na.rm = TRUE)) 
+
+school_bal_data <- eth_frl_ell_special_ed_2006_2010 |> 
+  left_join(county_fips_key, join_by(`Schl ID` == IDOE_SCHOOL_ID)) |> 
+  mutate(treat = case_when(COUNTY_NAME %in% treated_counties ~ 1,
+                   COUNTY_NAME %in% control_counties ~ 0)) |> 
+  filter(treat == 0 | treat ==1) 
+
+school_tab <- datasummary_balance(data = school_bal_data, 
+                    formula = white_percent + free_reduced_meal_percent + free_meals_percent + `ELL %` + `Special Education %`~ treat,
+                    output = "data.frame")
+```
+
+```{r}
+district_bal_data <- sch_finance_2000_2010 |> 
+  mutate(treat = case_when(county_name.x %in% treated_counties ~ 1,
+                   county_name.x %in% control_counties ~ 0)) |> 
+  filter(treat == 0 | treat ==1,
+         year < 2006) 
+
+district_tab <- datasummary_balance(data = district_bal_data, 
+                    formula = ENROLL + TOTALREV + TOTALEXP + TCURINST + PPCSTOT + PPITOTAL ~ treat,
+                    output = "data.frame")
+```
+
+```{r}
+county_bal_data <- saipe_2000_2010 |> 
+  left_join(lf_data_2000_2010, 
+            by = join_by(County, year)) |> 
+  left_join(population_data_2000_2010,
+            join_by(County, year)) |> 
+  mutate(treat = case_when(County %in% treated_counties ~ 1,
+                   County %in% control_counties ~ 0),
+         weights = population) |> 
+  filter(treat == 0 | treat ==1,
+         year == 2005)
+
+county_tab <- datasummary_balance(data = county_bal_data, 
+                    formula = mhi + percent_pov + `Unemployment Rate (%)` ~ treat,
+                    output = "data.frame")
+```
+
+```{r}
+school_tab <- school_tab |> 
+  mutate(panel = "School")
+
+district_tab <- district_tab |> 
+  mutate(panel = "District")
+
+county_tab <- county_tab |> 
+  mutate(panel = "County")
+
+all_tabs <- bind_rows(school_tab, district_tab, county_tab)
+
+summary_stats <- all_tabs |>
+  gt(groupname_col = "panel")
+
+```
+

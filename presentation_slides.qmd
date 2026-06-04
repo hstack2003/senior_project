@@ -1,0 +1,18 @@
+---
+title: "Here Comes the Sun: The Effect of Earlier Sunrises and Sunsets on Academic Achievement"
+author: "Hannah M. Stackpole"
+format: revealjs
+editor: source
+---
+
+## Map
+```{r}
+source("06. tables_figures.R")
+map_2006 +
+  labs(title = "2006 Time Zone Change",
+       fill = "County Designation",
+       caption = "Treated counties Daviess, Dubois, Knox, Martin, Perry, 
+       and Pike move to Central time zone on April 2, 2006 \nwhile surrounding 
+       control counties (green) remain in the Eastern time zone")
+```
+

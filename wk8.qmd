@@ -1,0 +1,260 @@
+---
+title: "wk8"
+format: html
+editor: visual
+---
+```{r}
+library(knitr)
+library(tidyverse)
+library(tidyr)
+source("06. tables_figures.R")
+library(sandwich)
+library(lmtest)
+library(fixest)
+```
+
+## Test by Subject/Age
+
+```{r}
+istep_did_data |> 
+  mutate(age_range = (case_when(GRADE_CODE %in% c("03", "04", "05") ~ "Elementary",
+                                   GRADE_CODE %in% c("06", "07", "08") ~ "Middle",
+                                   GRADE_CODE %in% c("09", "10") ~ "High School"))) |>
+  bind_rows(istep_did_data |> mutate(age_range = "All Grades")) |> 
+  mutate(age_range = factor(age_range,
+                            levels = c("All Grades", "Elementary", "Middle", "High School"))) |> 
+  nest(data = -c(subject, age_range)) |>
+  mutate(mod = map(data, 
+                   ~ feols(`Proficient %` ~ treated * post_treat | 
+                             IDOE_SCHOOL_ID + SCHOOL_YEAR_ID,
+                           cluster = ~ IDOE_SCHOOL_ID,
+                           data = .x)),
+         coefs = map(mod, broom::tidy)) |> 
+  select(subject, age_range, coefs) |> 
+  unnest(cols = coefs) |> 
+  group_by(subject) |> 
+  mutate(p_adj_holm = p.adjust(p.value, method = "holm")) |> 
+  ungroup()
+```
+
+## ELA DiD by Age Group
+```{r}
+istep_did_data |> 
+  filter(subject == "ELA") |> 
+  mutate(age_range = fct(case_when(GRADE_CODE %in% c("03", "04", "05") ~ "Elementary",
+                                   GRADE_CODE %in% c("06", "07", "08") ~ "Middle",
+                                   GRADE_CODE %in% c("09", "10") ~ "High School"))) |>
+  nest(age_data = -age_range) |>
+  mutate(mod = map(age_data, 
+                   ~ feols(`Proficient %` ~ treated * post_treat | 
+                             IDOE_SCHOOL_ID + SCHOOL_YEAR_ID,
+                           cluster = ~ IDOE_SCHOOL_ID,
+                           data = .x)),
+         coefs = map(mod, broom::tidy)) |> 
+  select(age_range, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat") |> 
+  mutate(p_adj_holm = p.adjust(p.value, method = "holm"))
+```
+## Math DiD by Age Range
+
+```{r}
+istep_did_data |> 
+  filter(subject == "Math") |> 
+  mutate(age_range = fct(case_when(GRADE_CODE %in% c("03", "04", "05") ~ "Elementary",
+                                   GRADE_CODE %in% c("06", "07", "08") ~ "Middle",
+                                   GRADE_CODE %in% c("09", "10") ~ "High School"))) |>
+  nest(age_data = -age_range) |>
+  mutate(mod = map(age_data, 
+                   ~ feols(`Proficient %` ~ treated * post_treat | 
+                             IDOE_SCHOOL_ID + SCHOOL_YEAR_ID,
+                           cluster = ~ IDOE_SCHOOL_ID,
+                           data = .x)),
+         coefs = map(mod, broom::tidy)) |> 
+  select(age_range, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat") |> 
+  mutate(p_adj_holm = p.adjust(p.value, method = "holm"))
+```
+
+
+## ELA DiD by Grade
+```{r}
+istep_did_data |> 
+  filter(subject == "ELA") |> 
+  nest(grade_data = -GRADE_CODE) |>
+  mutate(mod = map(grade_data, 
+                   ~ feols(`Proficient %` ~ treated * post_treat | 
+                             IDOE_SCHOOL_ID + SCHOOL_YEAR_ID,
+                           cluster = ~ IDOE_SCHOOL_ID,
+                           data = .x)),
+         coefs = map(mod, broom::tidy)) |> 
+  select(GRADE_CODE, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat") |> 
+  mutate(p_adj_holm = p.adjust(p.value, method = "holm"))
+``` 
+
+## Math DiD by grade
+```{r}
+istep_all |> 
+  filter(!is.na(treatment),
+         SCHOOL_YEAR_ID %in% c("2005", "2006", "2007"),
+         subject == "Math") |> 
+  nest(grade_data = -GRADE_CODE) |>
+  mutate(mod = map(grade_data, 
+                   ~ lm(`Proficient %` ~ treatment + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(GRADE_CODE, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat") 
+``` 
+
+
+# ELA DiD by Profiency
+```{r}
+istep_did_data |> 
+  left_join(prof_levels_2005,
+            join_by(IDOE_SCHOOL_ID, subject)) |> 
+  filter(subject == "Math") |> 
+  nest(prof_data = -prof_level) |>
+  mutate(mod = map(prof_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(prof_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+
+# without Vigo and Monroe
+istep_did_data |> 
+  filter_out(COUNTY_NAME == "Vigo" | COUNTY_NAME == "Monroe") |> 
+  left_join(prof_levels_2005,
+            join_by(IDOE_SCHOOL_ID, subject)) |> 
+  filter(subject == "Math") |> 
+  nest(prof_data = -prof_level) |>
+  mutate(mod = map(prof_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(prof_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+
+```
+
+
+# Math DiD by Proficiency
+```{r}
+istep_did_data |> 
+  left_join(prof_levels_2005,
+            join_by(IDOE_SCHOOL_ID, subject)) |> 
+  filter(subject == "ELA") |> 
+  nest(prof_data = -prof_level) |>
+  mutate(mod = map(prof_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(prof_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+```
+
+# Math DiD by White Level
+```{r}
+istep_did_data |> 
+  left_join(cov_levels_2006,
+            join_by(IDOE_SCHOOL_ID == `Schl ID`)) |> 
+  filter(subject == "Math") |> 
+  nest(white_data = -white_level) |>
+  mutate(mod = map(white_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(white_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+```
+
+# ELA DiD by White Level
+```{r}
+istep_did_data |> 
+  left_join(cov_levels_2006,
+            join_by(IDOE_SCHOOL_ID == `Schl ID`)) |> 
+  filter(subject == "ELA") |> 
+  nest(white_data = -white_level) |>
+  mutate(mod = map(white_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(white_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+```
+
+# ELA DiD by FRL Level
+```{r}
+istep_did_data |> 
+  left_join(cov_levels_2006,
+            join_by(IDOE_SCHOOL_ID == `Schl ID`)) |> 
+  filter(subject == "ELA") |> 
+  nest(FRL_data = -free_reduced_level) |>
+  mutate(mod = map(FRL_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(free_reduced_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+```
+
+# Math DiD by FRL Level
+```{r}
+istep_did_data |> 
+  left_join(cov_levels_2006,
+            join_by(IDOE_SCHOOL_ID == `Schl ID`)) |> 
+  filter(subject == "Math") |> 
+  nest(FRL_data = -free_reduced_level) |>
+  mutate(mod = map(FRL_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(free_reduced_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+```
+
+# Math DiD by Free Meal Status
+
+```{r}
+istep_did_data |> 
+  left_join(cov_levels_2006,
+            join_by(IDOE_SCHOOL_ID == `Schl ID`)) |> 
+  filter(subject == "Math") |> 
+  nest(free_meal_data = -free_meal_level) |>
+  mutate(mod = map(free_meal_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(free_meal_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+```
+
+# ELA DiD by Free Meal Level
+```{r}
+istep_did_data |> 
+  left_join(cov_levels_2006,
+            join_by(IDOE_SCHOOL_ID == `Schl ID`)) |> 
+  filter(subject == "ELA") |> 
+  nest(free_meal_data = -free_meal_level) |>
+  mutate(mod = map(free_meal_data, 
+                   ~ lm(`Proficient %` ~ treated*post_treat + factor(IDOE_SCHOOL_ID) + factor(SCHOOL_YEAR_ID), data = .x)),
+         coefs = map(mod,
+                      ~ broom::tidy(.x))) |> 
+  select(free_meal_level, coefs) |> 
+  unnest(cols = coefs) |> 
+  filter(term == "treated:post_treat")
+```
+

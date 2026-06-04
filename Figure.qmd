@@ -1,0 +1,374 @@
+---
+title: "Figure"
+format: html
+editor: visual
+author: Hannah Stackpole
+---
+
+First, combine 2025 and 2005 directories to find county data for the most schools.
+
+2005 directory has county numbers, so also need to upload key, then match county to number in the 2005 directory.
+
+```{r}
+echo = FALSE
+library(dplyr)
+library(readr)
+# import directory data
+library(readxl)
+directory_2005 <- read_excel("2005 School Directory.xlsx", sheet = 1)
+directory_2005 <- directory_2005 |> rename("COUNTY_CODE" = "COUNTY")
+directory_2005 <- directory_2005 |> rename("IDOE_SCHOOL_ID" = "SCHL")
+county_nums <- read_excel("2005 School Directory.xlsx", sheet = 2)
+
+# keep only school ID, corp ID, and county code
+school_counties <- directory_2005 |>
+  select(IDOE_SCHOOL_ID, CORP, COUNTY_CODE) |>
+  distinct()
+
+# add county no. 5 to county-number list
+library(dplyr)
+county_nums <- add_row(county_nums,
+                       COUNTY_CODE = sprintf("%02d", 5),
+                       COUNTY_NAME = "Blackford")
+
+# add counties to school county directory
+school_counties <- school_counties |>
+  left_join(
+    county_nums |>
+      select(COUNTY_CODE, COUNTY_NAME),
+    by = "COUNTY_CODE"
+  )
+
+# add county info to istep data
+istep_all <- istep_all |>
+  left_join(
+    school_counties |>
+      select(IDOE_SCHOOL_ID, COUNTY_CODE, COUNTY_NAME),
+    by = "IDOE_SCHOOL_ID"
+  )
+
+# find schools that are missing county info
+missing_counties <- istep_all |>
+  filter(is.na(COUNTY_NAME) | COUNTY_NAME == "") |>
+  select(IDOE_SCHOOL_ID, IDOE_CORPORATION_ID, SCHOOL_NAME, CORPORATION_NAME, COUNTY_NAME, COUNTY_CODE) |> distinct()
+
+# fill missing counties with 2025 directory
+missing_counties <- missing_counties |>
+  left_join(
+    school_directory_all |>
+      select(IDOE_SCHOOL_ID, COUNTY_NAME),
+    by = "IDOE_SCHOOL_ID",
+    suffix = c("", "_2025")
+  ) |>
+  mutate(
+    COUNTY_NAME = coalesce(COUNTY_NAME, COUNTY_NAME_2025)
+  ) |>
+  select(-COUNTY_NAME_2025)
+really_missing_counties <- missing_counties |>
+  filter(is.na(COUNTY_NAME) | COUNTY_NAME == "") # not worried about these as only missing are from 2008-2011 and only two schools are missing county for 2008. Can easily impute missing data if I end up using 2008 data. 
+
+# merge the updated counties in the missing_counties dataset with the istep data
+istep_all <- istep_all |>
+  left_join(
+    missing_counties |>
+      select(IDOE_SCHOOL_ID, COUNTY_NAME),
+    by = "IDOE_SCHOOL_ID",
+    suffix = c("", "_fill")
+  ) |>
+  mutate(
+    COUNTY_NAME = coalesce(COUNTY_NAME, COUNTY_NAME_fill)
+  ) |>
+  select(-COUNTY_NAME_fill)
+
+missing_counties_final <- istep_all |>
+  filter(is.na(COUNTY_NAME) | COUNTY_NAME == "") |>
+  select(IDOE_SCHOOL_ID, IDOE_CORPORATION_ID, everything()) |>
+  distinct()
+
+# make variables numeric
+istep_all <- istep_all %>%
+  mutate(
+    tested_ela     = parse_number(as.character(tested_ela)),
+    proficient_ela = parse_number(as.character(proficient_ela)),
+    tested_math     = parse_number(as.character(tested_math)),
+    proficient_math = parse_number(as.character(proficient_math))
+  )
+```
+
+Next, make figure:
+
+```{r}
+# convert suppressed data to NA
+istep_county <- istep_all %>%
+  mutate(
+    proficient_ela = na_if(proficient_ela, "***"),
+    tested_ela = na_if(tested_ela, "***"),
+    proficient_ela = as.numeric(proficient_ela),
+    tested_ela = as.numeric(tested_ela),
+    proficient_math = na_if(proficient_math, "***"),
+    tested_math = na_if(tested_math, "***"),
+    proficient_math = as.numeric(proficient_math),
+    tested_math= as.numeric(tested_math),
+  )
+
+# aggregate to county level
+istep_county <- istep_all %>%
+  group_by(COUNTY_NAME, SCHOOL_YEAR_ID, TEST_PERIOD, GRADE_CODE) %>%
+  summarise(
+    tested_ela = sum(tested_ela, na.rm = TRUE),
+    proficient_ela = sum(proficient_ela, na.rm = TRUE),
+    tested_math = sum(tested_math, na.rm = TRUE),
+    proficient_math = sum(proficient_math, na.rm = TRUE),
+    .groups = "drop"
+  ) 
+
+# calculate proficiency rates
+istep_county <- istep_county %>%
+  mutate(
+    percent_proficient_ela  = if_else(tested_ela > 0,
+                            proficient_ela / tested_ela,
+                            NA_real_),
+    percent_proficient_math = if_else(tested_math > 0,
+                            proficient_math / tested_math,
+                            NA_real_)
+  )
+
+# histograms
+library(ggplot2)
+ggplot(istep_county, aes(x = percent_proficient_ela)) +
+  geom_histogram(bins = 20, color = "black") +
+  facet_wrap(~ GRADE_CODE) +
+  labs(
+    title = "Distribution of ELA Proficiency Rates by Grade",
+    x = "ELA Proficiency Rate",
+    y = "Count"
+  )
+```
+
+Summary Statistics:
+
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(gt)
+
+desc_tbl <- grade8_data |>                   
+  summarise(across(
+    where(is.numeric),
+    list(
+      N = ~ sum(!is.na(.x)),
+      Mean = ~ mean(.x, na.rm = TRUE),
+      SD = ~ sd(.x, na.rm = TRUE),
+      Min = ~ min(.x, na.rm = TRUE),
+      Max = ~ max(.x, na.rm = TRUE)
+    ),
+    .names = "{.col}__{.fn}"
+  )) |>
+  pivot_longer(everything(),
+               names_to = c("Variable", ".value"),
+               names_sep = "__") |>
+  mutate(across(c(Mean, SD, Min, Max), ~ round(.x, 2))) |>
+  arrange(Variable)
+
+desc_tbl |>
+    mutate(
+    Variable = recode(Variable,
+      tested_ela = "ELA Students Tested",
+      proficient_ela = "ELA Students Proficient",
+      percent_proficient_ela = "ELA Proficiency Rate",
+      tested_math = "Math Students Tested",
+      proficient_math = "Math Students Proficient",
+      percent_proficient_math = "Math Proficiency Rate"
+    )
+  ) |>
+  gt() |>
+  tab_header(title = "Table 1: Summary Statistics (Grade 8)") |>
+  fmt_number(columns = c(Mean, SD, Min, Max), decimals = 2)
+
+gtsave(desc_tbl, "grade8_descriptive_stats.png")
+```
+
+"Event Study"
+
+```{r}
+library(dplyr)
+treated_avg <- istep_county |>
+  filter(COUNTY_NAME %in% treatment_counties_both) |>
+  group_by(SCHOOL_YEAR_ID, GRADE_CODE) |>
+  summarise(
+    avg_ela_prof = mean(percent_proficient_ela, na.rm = TRUE),
+    avg_math_prof = mean(percent_proficient_math,na.rm = TRUE),
+    .groups = "drop"
+  )
+library(tidyr)
+treat_avg_long <- treated_avg %>%
+  pivot_longer(
+    cols = c(avg_ela_prof, avg_math_prof),
+    names_to = "Subject",
+    values_to = "Average_Proficiency"
+  )
+
+library(ggplot2)
+
+ggplot(treat_avg_long,
+       aes(x = as.numeric(SCHOOL_YEAR_ID),
+           y = Average_Proficiency,
+           color = Subject)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  labs(
+    title = "Average Proficiency Rates Over Time (Treatment Counties)",
+    x = "Year",
+    y = "Average Proficiency Rate",
+    color = "Subject"
+  ) +
+  scale_color_manual(
+    values = c("avg_ela" = "lightblue",
+               "avg_math" = "orange"),
+    labels = c("ELA", "Math")
+  ) +
+  theme_minimal()
+```
+
+ELA:
+
+```{r}
+istep_all_fig <- istep_all |>
+  mutate(
+    group = case_when(
+      COUNTY_NAME %in% treatment_counties_both ~ "Treatment",
+      COUNTY_NAME %in% control_counties_both   ~ "Control",
+      TRUE                                ~ "Other"
+    )
+  )
+
+istep_all_fig_filtered <- istep_all_fig %>%
+  filter(group %in% c("Treatment", "Control"))
+
+weighted_avg <- istep_all_fig_filtered %>%
+  group_by(SCHOOL_YEAR_ID, GRADE_CODE, group) %>%
+  summarise(
+    ela_rate  = sum(proficient_ela, na.rm = TRUE) /
+                sum(tested_ela, na.rm = TRUE),
+    math_rate = sum(proficient_math, na.rm = TRUE) /
+                sum(tested_math, na.rm = TRUE),
+    .groups = "drop"
+  )
+weighted_avg <- weighted_avg %>%
+  mutate(
+    year_date = as.Date(paste0(SCHOOL_YEAR_ID, "-09-01"))
+  )
+
+library(ggplot2)
+
+to_central <- as.Date("2006-04-01")  # April 2006
+back_to_eastern <- as.Date("2007-11-01")  # November 2007
+
+library(ggplot2)
+
+selected_grade <- "06"
+
+plot_g10_ela <- ggplot(
+  weighted_avg %>% filter(GRADE_CODE == selected_grade),
+  aes(x = year_date,
+      y = ela_rate,
+      color = group)
+) +
+  geom_line(size = 1.2) +
+  geom_point() +
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black") +
+  scale_y_continuous(
+  limits = c(0.5, 0.9),
+  labels = scales::percent
+) +
+  labs(
+    title = "Grade 10 ELA Proficiency",
+    x = "Year",
+    y = "Percent Proficient on ISTEP+ Test",
+    color = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5)   # Center title
+  ) +
+  annotate("text",
+           x = as.Date("2006-4-01"), y = .8,
+           label = "Treatment counties move to\n  Central time", hjust = -0.075) +
+  annotate("text",
+           x = as.Date("2007-11-04"), y = .65,
+           label = "Return to Eastern",hjust = -0.1)
+
+ggsave(
+  "grade10_ela.png",
+  plot = plot_g10_ela,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+```
+
+Math:
+
+```{r}
+selected_grade <- "10"
+
+plot_g10_math <- ggplot(
+  weighted_avg %>% filter(GRADE_CODE == selected_grade),
+  aes(x = year_date,
+      y = math_rate,
+      color = group)
+) +
+  geom_line(size = 1.2) +
+  geom_point() +
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black") +
+  scale_y_continuous(
+  limits = c(0.5, 0.9),
+  labels = scales::percent
+) +
+  labs(
+    title = "Grade 10 Math Proficiency",
+    x = "Year",
+    y = "Percent Proficient on ISTEP+ Test",
+    color = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5)   # Center title
+  ) +
+  annotate("text",
+           x = as.Date("2006-4-01"), y = .8,
+           label = "Treatment counties move to\n  Central time", hjust = -0.075) +
+  annotate("text",
+           x = as.Date("2007-11-04"), y = .65,
+           label = "Return to Eastern",hjust = -0.1)
+
+plot_g10_math
+
+ggsave(
+  "grade10_math.png",
+  plot = plot_g10_math,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+```
+
+Formatting:
+
+```{r}
+install.packages("ggplot2")
+install.packages("patchwork")
+combined_plot <- plot_g10_ela + plot_g10_math
+combined_plot
+```
