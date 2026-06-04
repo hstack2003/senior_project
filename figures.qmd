@@ -301,3 +301,99 @@ summary_stats <- all_tabs |>
 
 ```
 
+# School Demo over time
+```{r}
+eth_frl_ell_special_ed_2006_2010 |> 
+  left_join(county_fips_key, join_by(`Schl ID` == IDOE_SCHOOL_ID)) |> 
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counties ~ "Treatment",
+                   COUNTY_NAME %in% control_counties ~ "Control")) |> 
+  filter(treated == "Treatment" | treated == "Control") |> 
+  group_by(treated, year) |> 
+  summarise(mean_spec_ed = mean(`Special Education %`),
+            mean_ell = mean(`ELL %`),
+            mean_white = mean(white_percent),
+            mean_free_lunch = mean(free_meals_percent, na.rm = TRUE)) |> 
+  pivot_longer(cols = -c(treated, year),
+               names_to = "measure",
+               values_to = "value") |> 
+  ggplot(mapping = aes(x = year,
+                       y = value,
+                       color = factor(treated))) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ measure, scales = "free_y") +
+  scale_color_manual(
+    values = c("Treatment" = "pink1",
+               "Control" = "yellow4")) 
+  
+```
+
+# School Finance over Time
+```{r}
+sch_finance_2000_2010 |> 
+   mutate(treated = case_when(county_name.x %in% treated_counties ~ "Treatment",
+                   county_name.x %in% control_counties ~ "Control"),
+          year_date = as.Date(paste0(year, "-09-01"))) |> 
+  filter(treated == "Treatment" | treated == "Control") |> 
+  group_by(treated, year_date) |> 
+  summarise(mean_ppi = mean(PPITOTAL),
+            mean_ppcs = mean(PPCSTOT),
+            mean_enroll = mean(ENROLL),
+            mean_total_rev = mean(TOTALREV),
+            mean_total_exp = mean(TOTALEXP),
+            .groups = "drop") |> 
+  pivot_longer(cols = -c(treated, year_date),
+               names_to = "measure",
+               values_to = "value") |> 
+  ggplot(mapping = aes(x = year_date,
+                       y = value,
+                       color = factor(treated))) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ measure, scales = "free_y",
+             ncol = 1) +
+  scale_color_manual(
+    values = c("Treatment" = "pink1",
+               "Control" = "yellow4")) +
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black") 
+  
+```
+
+
+```{r}
+sch_finance_2000_2010 |> 
+  mutate(treated = case_when(county_name.x %in% treated_counties ~ "Treatment",
+                   county_name.x %in% control_counties ~ "Control")) |> 
+  filter(treated == "Treatment" | treated == "Control") |> 
+  group_by(county_name.x, year) |> 
+  summarise(mean_ppi = mean(PPITOTAL),
+            mean_ppcs = mean(PPCSTOT),
+            mean_enroll = mean(ENROLL),
+            mean_total_rev = mean(TOTALREV),
+            mean_total_exp = mean(TOTALEXP),
+            .groups = "drop") |> 
+  pivot_longer(cols = -c(county_name.x, year),
+               names_to = "measure",
+               values_to = "value") |> 
+  ggplot(mapping = aes(x = year,
+                       y = value,
+                       color = county_name.x)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ measure, scales = "free_y") +
+  scale_color_manual(
+    values = c("Treatment" = "pink1",
+               "Control" = "yellow4")) +
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black")
+```
+
