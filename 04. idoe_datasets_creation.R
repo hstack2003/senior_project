@@ -157,3 +157,36 @@ eth_frl_ell_special_ed_2006_2010 <- ethnicity_frl_2006_2010 |>
          free_meals_percent = `Free Meals`/`TOTAL ENROLLMENT`,
          reduced_meals_percent = `Reduced Price Meals`/`TOTAL ENROLLMENT`,
          free_reduced_meal_percent = (`Free Meals`+`Reduced Price Meals`)/`TOTAL ENROLLMENT`)
+
+# Variable Creation for Heterogeneous Effects Analysis
+
+# Proficiency Rates from 2005 (pre-treatment)
+quartile_levels = c("very low", "low", "high", "very high")
+
+prof_levels_2005 <- istep_did_data |> 
+  filter(SCHOOL_YEAR_ID == 2005) |> 
+  group_by(IDOE_SCHOOL_ID, subject) |> 
+  summarise(prof_rate_2005 = sum(Proficient)/sum(Tested),
+            .groups = "drop") |> 
+  mutate(prof_level = factor(ntile(prof_rate_2005, 4),
+                             labels = quartile_levels)) 
+
+# FRL Status and % White from 2006
+cov_levels_2006 <- eth_frl_ell_special_ed_2006_2010 |>
+  filter(year == 2006) |> 
+  mutate(white_level = factor(ntile(white_percent, 4),
+                              labels = quartile_levels),
+         free_reduced_level = factor(ntile(free_reduced_meal_percent, 4),
+                                     labels = quartile_levels),
+         free_meal_level = factor(ntile(free_meals_percent, 4),
+                                  labels = quartile_levels),
+         reduced_meal_level = factor(ntile(reduced_meals_percent, 4),
+                                     labels = quartile_levels)) |> 
+  select(`Schl ID`, white_level, free_reduced_level, free_meal_level, reduced_meal_level)
+# Join new variables 
+
+istep_did_data <- istep_did_data |> 
+  left_join(prof_levels_2005, 
+            by = join_by(IDOE_SCHOOL_ID, subject)) |> 
+  left_join(cov_levels_2006, 
+            by = join_by(IDOE_SCHOOL_ID == `Schl ID`))
