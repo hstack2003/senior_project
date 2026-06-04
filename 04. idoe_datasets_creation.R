@@ -82,12 +82,6 @@ county_fips_key <- istep_did_data |>
   distinct(IDOE_SCHOOL_ID, COUNTY_NAME) |> 
   right_join(county_fips_key, join_by(COUNTY_NAME == county_name))
 
-# Controls
-
-#wait for now until load in other ethnicity data
-#enroll_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP 02062026_v1.xlsx",
-#sheet = "ENROLLMENT")
-
 # Ethnicity / FRL
 
 ethnicity_FRL_2006 <- read_xlsx("IDOE_Data/school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-26-final.xlsx",
@@ -122,8 +116,6 @@ ethnicity_frl_2006_2010 <- bind_rows(ethnicity_FRL_2006,
                                      ethnicity_FRL_2010)
 
 # ELL / Special Ed
-
-"school-enrollment-ell-special-education-2006-25-updated (1).xlxs"
 
 ell_spec_ed_2006 <- read_xlsx("IDOE_Data/school-enrollment-ell-special-education-2006-25-updated (1).xlsx",
                                 sheet = "2006") |> 
