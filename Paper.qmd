@@ -100,7 +100,7 @@ Beyond the individual wage and economic outcomes, increased cognitive skills (as
 # Data
 
 ## Academic Outcomes
-Standardized test proficiency rates, school demographic and directory data, and school graduation and attendance rates come from the Indiana Department of Education (IDOE). The data comprise school level ISTEP+ standardized test proficiency rates in English Language Arts (ELA) and math for grades 3-10 from 2005 to 2008. The outcome variable is the school-level proficiency rate, measured as the proportion of proficient students out of the total tested. The treatment is a binary variable equal to 1 for the treated counties in the years 2006 and 2007 (while on central time) and equal to 0 for the treated counties in non-treatment years and for the control counties in all study years. Proficiency data for lasses with fewer than ten students is masked for privacy; I ignore this data in my analysis. Table 1 (below) shows an example of ELA and Math proficiency rates for Grade 8. The data also include corporation-level demographic data, graduation rates, and attendance rates. 
+Standardized test proficiency rates, school demographic and directory data, and school graduation and attendance rates come from the Indiana Department of Education (IDOE). The data comprise school level ISTEP+ standardized test proficiency rates in English Language Arts (ELA) and math for grades 3-10 from 2005 to 2008. The outcome variable is the school-level proficiency rate, measured as the proportion of proficient students out of the total tested. The treatment is a binary variable equal to 1 for the treated counties in the years 2006 and 2007 (while on central time) and equal to 0 for the treated counties in non-treatment years and for the control counties in all study years. Proficiency data for lasses with fewer than ten students is masked for privacy; I ignore this data in my analysis. @tbl-balance shows an example of ELA and Math proficiency rates for Grade 8. The data also include corporation-level demographic data, graduation rates, and attendance rates. 
 
 
 ```{r}
@@ -154,6 +154,12 @@ Where $Y_{it}$ is the proficiency rate for school i in year t, $\text{treated}_i
 #| label: tbl-main-results
 #| tbl-cap: "Age Group Effects by Subject"
 main_results_tbl
+```
+
+```{r}
+#| label: tbl-prof-results
+#| tbl-cap: "Proficiency Level Results by Age Group Effects and Subject"
+prof_level_results_tbl
 ```
 
 # Conclusion
