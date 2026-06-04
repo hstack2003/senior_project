@@ -116,7 +116,7 @@ sch_finance_2000_2010 <- bind_rows(sch_finance_2000,
   select(fips_county, county_name, everything())
 
 
-sch_finance_2000_2010 |> 
+sch_finance_2000_2010 <- sch_finance_2000_2010 |> 
   left_join(county_fips_key,
             by = "fips_county")
 

@@ -1,0 +1,7 @@
+library(knitr)
+library(tidyverse)
+library(tidyr)
+library(sandwich)
+library(lmtest)
+library(fixest)
+source("06. tables_figures.R")

@@ -32,17 +32,6 @@ all_school_directory <- bind_rows(school_direct_2025,
   full_join(school_direct_2005,
             by = join_by(IDOE_SCHOOL_ID == SCHL))
 
-# check which schools are not in istep data but not 2005-2007 or 2025 directories
-istep_math_data |> 
-  anti_join(school_direct_2005,
-            by = join_by(IDOE_SCHOOL_ID == SCHL)) |> 
-  anti_join(all_schools_2025,
-            by = "IDOE_SCHOOL_ID") |> 
-  anti_join(corp_direct_2005,
-            by = join_by(IDOE_CORPORATION_ID == CORP)) |> 
-  group_by(SCHOOL_YEAR_ID) |> 
-  summarise(count = n())
-
 # Test / Outcome Data
 
 grad_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP 02062026_v1.xlsx",
@@ -63,7 +52,7 @@ istep_ela_data <- read_xlsx("IDOE_Data/DRF-504 - Hannah Stackpole Grad_ATT_ISTEP
   mutate(subject = "ELA")
 
 #define treatment and control counties
-treated_counites <- c("Daviess", "Dubois", "Knox", "Martin", "Pike")
+treated_counties <- c("Daviess", "Dubois", "Knox", "Martin", "Pike", "Perry")
 control_counties <- c("Sullivan", "Vigo", "Clay", "Greene", "Monroe", 
                       "Lawrence", "Jackson", "Washington", "Orange", 
                       "Crawford", "Harrison", "Owen")
@@ -74,14 +63,24 @@ istep_all <- istep_ela_data |>
   bind_rows(istep_math_data) |> 
   left_join(school_direct_2005,
             by = join_by(IDOE_SCHOOL_ID == SCHL)) |> 
-  filter_out(Proficient == "***") |> 
+  filter(Proficient != "***") |> 
   mutate(`Proficient %`= as.numeric(`Proficient %`),
          Proficient = as.numeric(Proficient),
          Tested = as.numeric(Tested),
-         treatment = case_when(COUNTY_NAME %in% control_counties ~ 0,
-                               COUNTY_NAME %in% treated_counites & SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 1,
-                               COUNTY_NAME %in% treated_counites & !SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 0),)
+         treated = case_when(COUNTY_NAME %in% treated_counties ~ 1,
+                             COUNTY_NAME %in% control_counties ~0))
 
+istep_did_data <- istep_all |> 
+  filter(SCHOOL_YEAR_ID %in% c("2005", "2006", "2007")) |> 
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counties ~ 1,
+                             COUNTY_NAME %in% control_counties ~0),
+         post_treat = case_when(SCHOOL_YEAR_ID == 2005 ~ 0,
+                                SCHOOL_YEAR_ID %in% c("2006", "2007") ~ 1)) |> 
+  filter(!is.na(treated))
+
+county_fips_key <- istep_did_data |> 
+  distinct(IDOE_SCHOOL_ID, COUNTY_NAME) |> 
+  right_join(county_fips_key, join_by(COUNTY_NAME == county_name))
 
 # Controls
 

@@ -4,6 +4,9 @@ library(ggplot2)
 library(tidyverse)
 library(lubridate)
 library(knitr)
+library(modelsummary)
+library(estimatr)
+library(gt)
 source("05. population_dataset_creation.R")
 
 # Treatment vs Control Map
@@ -15,10 +18,10 @@ map_data <- saipe_2000_2010 |>
          year = as.numeric(year)) |> 
   left_join(lf_data_2000_2010, 
             by = join_by(fips_county, year)) |> 
-  mutate(county_name = str_trim(str_extract(county_name,
+  mutate(County = str_trim(str_extract(County.x,
                                             pattern = ".+\\s")),
-         treated = case_when(county_name %in% treated_counites ~ "Treatment",
-                             county_name %in% control_counties ~ "Control",
+         treated = case_when(County.x %in% treated_counties ~ "Treatment",
+                             County.x %in% control_counties ~ "Control",
                              .default = "Not in study"),
          treated = fct_relevel(treated, 
                                c("Treatment", "Control", "Not in study"))) |> 
@@ -29,19 +32,12 @@ map_2006 <- plot_usmap(data = map_data,
            regions = "counties",
            values = "treated",
            include = "IN") +
-  scale_fill_manual(values = c("Treatment" = "orange2",
-                               "Control" = "steelblue",
+  scale_fill_manual(values = c("Treatment" = "pink1",
+                               "Control" = "yellow4",
                                "Not in study" = "gray")) +
-  labs(title = "2006 Time Zone Change",
-       caption = "Treated counties Daviess, Dubois, Knox, Martin, Perry, and Pike move to Central time zone on April 2, 2006 \nwhile surrounding control counties (pink) remain in the Eastern time zone") +
   theme(legend.position = "left",
-        plot.caption = element_text(hjust = 0.5))
-
-ggsave("2006_map.png",
-       plot = map_2006,
-       width = 10,
-       height = 8,
-       dpi = 300)
+        plot.caption = element_text(hjust = 0.5)) +
+  labs(fill = "County Designation")
 
 # Proficiency Rate Figures
 # Define time zone changes
@@ -51,13 +47,13 @@ back_to_eastern <- ymd("2007-11-01")  # November 2007
 # By age group (EMH)
 proficiency_EMH_year_plot <-
 istep_all |> 
-  mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ "Treatment",
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counties ~ "Treatment",
                              COUNTY_NAME %in% control_counties ~ "Control"), 
          age_range = fct(case_when(GRADE_CODE %in% c("03", "04", "05") ~ "Elementary",
                                    GRADE_CODE %in% c("06", "07", "08") ~ "Middle",
                                    GRADE_CODE %in% c("09", "10") ~ "High School")),
          age_range = fct_relevel(age_range,
-                                 c("Elementary", "Middle", "High School")),) |> 
+                                 c("Elementary", "Middle", "High School"))) |> 
   filter(treated == "Treatment" | treated == "Control") |> 
   group_by(treated, subject, SCHOOL_YEAR_ID, age_range) |> # edit age range vs grade here
   summarise(Tested = sum(Tested),
@@ -78,12 +74,13 @@ istep_all |>
   geom_vline(xintercept = back_to_eastern,
              linetype = "dashed",
              color = "black") + 
-  labs(title = "Subject Proficiency Rates for Elemenentary, Middle, and High Schoolers",
-       subtitle = "Percent Proficient",
+  scale_color_manual(values = c("Treatment" = "pink1",
+                               "Control" = "yellow4")) +
+  labs(subtitle = "Percent Proficient",
        y = NULL,
        x = "Year",
-       caption = "placeholder",
        color = "Group")
+  
 
 ggsave("proficiency_EMH_year.png",
        plot = proficiency_EMH_year_plot,
@@ -94,7 +91,7 @@ ggsave("proficiency_EMH_year.png",
 # By grade (3-10)
 proficiency_grade_year_plot <- 
 istep_all |> 
-  mutate(treated = case_when(COUNTY_NAME %in% treated_counites ~ "Treatment",
+  mutate(treated = case_when(COUNTY_NAME %in% treated_counties ~ "Treatment",
                              COUNTY_NAME %in% control_counties ~ "Control")) |> 
   filter(treated == "Treatment" | treated == "Control") |> 
   group_by(treated, subject, SCHOOL_YEAR_ID, GRADE_CODE) |> # edit age range vs grade here
@@ -128,4 +125,88 @@ ggsave("proficiency_grade_year.png",
        width = 10,
        height = 8,
        dpi = 300)
+
+# Summary Stats
+school_bal_data <- eth_frl_ell_special_ed_2006_2010 |> 
+  left_join(county_fips_key, join_by(`Schl ID` == IDOE_SCHOOL_ID)) |> 
+  mutate(treat = case_when(COUNTY_NAME %in% treated_counties ~ 1,
+                           COUNTY_NAME %in% control_counties ~ 0)) |> 
+  filter(treat == 0 | treat ==1) 
+
+school_tab <- datasummary_balance(data = school_bal_data, 
+                                  formula = white_percent + free_reduced_meal_percent + free_meals_percent + `ELL %` + `Special Education %`~ treat,
+                                  output = "data.frame")
+
+district_bal_data <- sch_finance_2000_2010 |> 
+  mutate(treat = case_when(county_name.x %in% treated_counties ~ 1,
+                           county_name.x %in% control_counties ~ 0)) |> 
+  filter(treat == 0 | treat ==1,
+         year < 2006) 
+
+district_tab <- datasummary_balance(data = district_bal_data, 
+                                    formula = ENROLL + TOTALREV + TOTALEXP + TCURINST + PPCSTOT + PPITOTAL ~ treat,
+                                    output = "data.frame")
+
+county_bal_data <- saipe_2000_2010 |> 
+  left_join(lf_data_2000_2010, 
+            by = join_by(County, year)) |> 
+  left_join(population_data_2000_2010,
+            join_by(County, year)) |> 
+  mutate(treat = case_when(County %in% treated_counties ~ 1,
+                           County %in% control_counties ~ 0),
+         weights = population) |> 
+  filter(treat == 0 | treat ==1,
+         year == 2005)
+
+county_tab <- datasummary_balance(data = county_bal_data, 
+                                  formula = mhi + percent_pov + `Unemployment Rate (%)` ~ treat,
+                                  output = "data.frame")
+
+school_tab <- school_tab |> 
+  mutate(panel = "Panel A: School Characteristics")
+
+district_tab <- district_tab |> 
+  mutate(panel = "Panel B: District Characteristics")
+
+county_tab <- county_tab |> 
+  mutate(panel = "Panel C: County Characteristics")
+
+all_tabs <- bind_rows(school_tab, district_tab, county_tab) |> 
+  mutate(
+      ` ` = recode(
+      ` `,
+      white_percent = "White (%)",
+      free_reduced_meal_percent = "Free/Reduced Lunch (%)",
+      free_meals_percent = "Free Lunch (%)",
+      `ELL %` = "English Language Learners (%)",
+      `Special Education %` = "Special Education (%)",
+      ENROLL = "Enrollment",
+      TOTALREV = "Total Revenue",
+      TOTALEXP = "Total Expenditures",
+      TCURINST = "Total Instructional Spending",
+      PPCSTOT = "Per-Pupil Current Spending",
+      PPITOTAL = "Per-Pupil Instructional Spending",
+      mhi = "Median Household Income",
+      percent_pov = "Poverty Rate (%)",
+      `Unemployment Rate (%)` = "Unemployment Rate (%)"
+    )
+  )
+
+summary_stats <- all_tabs |>
+  gt(groupname_col = "panel",
+     rowname_col = " ") |> 
+  tab_spanner(label = "Control",
+              columns = c("0 / Mean", "0 / Std. Dev.")) |> 
+  tab_spanner(label = "Treatment",
+              columns = c("1 / Mean", "1 / Std. Dev.")) |> 
+  cols_label(`0 / Mean` = "Mean",
+             `0 / Std. Dev.` = "Std. Dev.",
+             `1 / Mean` = "Mean", 
+             `1 / Std. Dev.` = "Std. Dev.",
+             `Diff. in Means` = "Diff.") |> 
+  fmt_percent(
+    rows = c("White (%)"),
+    decimals = 2)
+
+summary_stats
   

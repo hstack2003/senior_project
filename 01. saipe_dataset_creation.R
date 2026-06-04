@@ -154,10 +154,13 @@ saipe_2000_2010 <- bind_rows(saipe_2000,
                                width = 3,
                                side = "left",
                                pad = "0"),
-         percent_pov = percent_pov/100)
+         percent_pov = percent_pov/100,
+         County = str_remove(county_name,
+                             pattern = "\\sCounty")) |> 
+  select(County, year, everything(), -county_name)
 
 # save as an excel file
-write_xlsx(saipe_2000_2010, "saipe_2000_2010.xlsx")
+#write_xlsx(saipe_2000_2010, "saipe_2000_2010.xlsx")
 
 # create a County FIPS / Name key for later use
 county_fips_key <- saipe_2000 |> 

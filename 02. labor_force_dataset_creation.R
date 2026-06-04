@@ -34,6 +34,9 @@ lf_data_2000_2010 <- bind_rows(lf_data_2000,
   filter(`State FIPS Code` == 18) |> 
   rename(fips_county = `County FIPS Code`,
          year = Year) |> 
-  mutate(year = as.numeric(year))
+  mutate(year = as.numeric(year),
+         County = str_remove(
+           str_extract(`County Name/State Abbreviation`, "^[^,]+"),
+           " County$"))
 
-write_xlsx(lf_data_2000_2010, "lf_data_2000_2010.xlsx")
+#write_xlsx(lf_data_2000_2010, "lf_data_2000_2010.xlsx")
