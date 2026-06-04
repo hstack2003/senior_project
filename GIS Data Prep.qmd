@@ -1,0 +1,85 @@
+---
+title: "GIS Data Prep"
+format: html
+editor: visual
+author: Hannah Stackpole
+---
+Take 1
+```{r}
+# upload shapefile data
+county_boundaries <- read.csv("County_Boundaries_of_Indiana_2023.csv")
+
+# clean up istep data county names (add " County")
+istep_all_gis <- istep_all |>
+  mutate(
+    COUNTY_NAME = paste0(COUNTY_NAME, " County")
+  )
+istep_county_gis <- istep_county |>
+  mutate(
+    COUNTY_NAME = paste0(COUNTY_NAME, " County")
+  )
+
+# rename county boundary county name column
+county_boundaries <- county_boundaries |>
+  rename(COUNTY_NAME = name)
+
+# merge shapefile data with istep data
+istep_county_gis <- istep_county_gis %>%
+  left_join(county_boundaries, by = "COUNTY_NAME")
+
+# filter out year and grade levels
+
+```
+
+Take 2
+```{r}
+library(sf)
+
+indiana_counties <- st_read(
+  "County_Boundaries_of_Indiana_2023/County_Boundaries_of_Indiana_2023.shp"
+)
+
+indiana_counties <- indiana_counties %>%
+  rename(COUNTY_NAME = name)
+
+istep_county_gis <- istep_county_gis %>%
+  left_join(indiana_counties, by = "COUNTY_NAME")
+
+grade8_2007 <- istep_county_gis %>%
+  filter(GRADE_CODE == "08",
+         SCHOOL_YEAR_ID == "2007")
+```
+
+"Wide" dataset
+```{r}
+wide_base <- istep_county |>
+  mutate(
+    grade_year = paste0("G", GRADE_CODE, "_", SCHOOL_YEAR_ID)
+  )
+
+library(tidyr)
+
+county_wide <- wide_base %>%
+  pivot_wider(
+    id_cols = COUNTY_NAME,
+    names_from = grade_year,
+    values_from = c(percent_proficient_ela, percent_proficient_math),
+    names_glue = "{.value}_{grade_year}",
+    values_fn = dplyr::first
+  )
+
+county_wide <- county_wide |>
+  mutate(
+    COUNTY_NAME = paste0(COUNTY_NAME, " County")
+  )
+
+county_wide_gis <- county_wide %>%
+  left_join(indiana_counties, by = "COUNTY_NAME")
+
+```
+
+Save files
+```{r}
+readr::write_csv(county_wide_gis, "county_wide_gis.csv")
+readr::write_csv(grade8_2007, "grade8_2007.csv")
+```

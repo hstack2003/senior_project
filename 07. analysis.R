@@ -46,3 +46,4 @@ main_results_tbl <- subject_age_did_results |>
               columns = c(estimate_se_Math, p.value_Math, p_adj_holm_Math)) |>
   fmt_number(columns = contains("p.value"),decimals = 3) |>
   fmt_number(columns = contains("p_adj_holm"),decimals = 3)
+
