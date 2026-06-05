@@ -183,6 +183,7 @@ cov_levels_2006 <- eth_frl_ell_special_ed_2006_2010 |>
          reduced_meal_level = factor(ntile(reduced_meals_percent, 4),
                                      labels = quartile_levels)) |> 
   select(`Schl ID`, white_level, free_reduced_level, free_meal_level, reduced_meal_level)
+
 # Join new variables 
 
 istep_did_data <- istep_did_data |> 

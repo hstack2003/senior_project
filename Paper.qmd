@@ -46,6 +46,7 @@ Spring 2026
 ```{r source-code}
 rm(list = ls())
 source("07. analysis.R")
+print(exists("prof_level_results_tbl"))
 ```
 
 # Introduction
@@ -159,6 +160,7 @@ main_results_tbl
 ```{r}
 #| label: tbl-prof-results
 #| tbl-cap: "Proficiency Level Results by Age Group Effects and Subject"
+print(exists("prof_level_results_tbl"))
 prof_level_results_tbl
 ```
 
