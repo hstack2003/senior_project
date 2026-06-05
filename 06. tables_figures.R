@@ -193,8 +193,7 @@ all_tabs <- bind_rows(school_tab, district_tab, county_tab) |>
   )
 
 summary_stats <- all_tabs |>
-  gt(groupname_col = "panel",
-     rowname_col = " ") |> 
+  gt(groupname_col = "panel") |> 
   tab_spanner(label = "Control",
               columns = c("0 / Mean", "0 / Std. Dev.")) |> 
   tab_spanner(label = "Treatment",

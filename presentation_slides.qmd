@@ -16,3 +16,9 @@ map_2006 +
        control counties (green) remain in the Eastern time zone")
 ```
 
+## EMH Proficiency
+```{r}
+proficiency_EMH_year_plot +
+  labs(title = "Subject Proficiency Rates for \nElemenentary, Middle, and High Schoolers")
+```
+
