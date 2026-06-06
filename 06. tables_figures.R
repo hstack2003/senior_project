@@ -202,10 +202,46 @@ summary_stats <- all_tabs |>
              `0 / Std. Dev.` = "Std. Dev.",
              `1 / Mean` = "Mean", 
              `1 / Std. Dev.` = "Std. Dev.",
-             `Diff. in Means` = "Diff.") |> 
-  fmt_percent(
-    rows = c("White (%)"),
-    decimals = 2)
+             `Diff. in Means` = "Diff.")
 
 summary_stats
+
+# School Finance over Time
+sch_finance_fig <- sch_finance_2000_2010 |> 
+  mutate(treated = case_when(county_name.x %in% treated_counties ~ "Treatment",
+                             county_name.x %in% control_counties ~ "Control"),
+         year_date = as.Date(paste0(year, "-09-01"))) |> 
+  filter(treated == "Treatment" | treated == "Control") |> 
+  group_by(treated, year_date) |> 
+  summarise(mean_ppi = mean(PPITOTAL),
+            mean_ppcs = mean(PPCSTOT),
+            mean_enroll = mean(ENROLL),
+            mean_total_rev = mean(TOTALREV),
+            mean_total_exp = mean(TOTALEXP),
+            .groups = "drop") |> 
+  pivot_longer(cols = -c(treated, year_date),
+               names_to = "measure",
+               values_to = "value") |> 
+  ggplot(mapping = aes(x = year_date,
+                       y = value,
+                       color = factor(treated))) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ measure, scales = "free_y",
+             ncol = 1) +
+  scale_color_manual(
+    values = c("Treatment" = "pink1",
+               "Control" = "yellow4")) +
+  geom_vline(xintercept = to_central,
+             linetype = "dashed",
+             color = "black") +
+  geom_vline(xintercept = back_to_eastern,
+             linetype = "dashed",
+             color = "black") +
+  labs(color = "Group",
+       x = "Year",
+       y = NULL,
+       title = "School Enrollment and Revenue/Expenditures over Time",
+       subtitle = "All measures in dollars ($) except for enrollment")
+
   

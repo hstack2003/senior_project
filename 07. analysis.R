@@ -34,6 +34,7 @@ main_results_tbl <- subject_age_did_results |>
   select(age_range, subject, estimate_se, p.value, p_adj_holm) |>
   pivot_wider(names_from = subject,
               values_from = c(estimate_se, p.value, p_adj_holm)) |>
+  gt() |> 
   cols_label(estimate_se_ELA = "Estimate (SE)",
              p.value_ELA = "p-value",
              p_adj_holm_ELA = "Holm p",

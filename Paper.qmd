@@ -151,7 +151,7 @@ proficiency_EMH_year_plot
 My specification is as follows:
 	
 $$
-{Y}_{it} = \beta_1(\text{treated}_i \times \text{post\_treat}_t) + \alpha_i + \gamma_t + \varepsilon_{it}
+{Y}_{itg} = \beta_1(\text{treated}_{ig} \times \text{post_treat}_t) + \alpha_i + \gamma_t + \delta_g + \varepsilon_{itg}
 $$ {#eq-did}
 
 Where $Y_{it}$ is the proficiency rate for school i in year t, $\text{treated}_i$ is an indicator variable equal to 1 for treatment counties and 0 for control counties, and  $\text{post\_treat}_t$ is an indicator variable equal to 1 post treatment (2006 adn 2007) and equal to 0 pre treatment (2005). I include school fixed effects $\alpha_i$, and year fixed effects $\gamma_t$. $\beta_1$ is the coefficient of interest and represents the effect of shifting sunrises and sunsets an hour earlier (as a result of moving from Eastern to Central time). 
