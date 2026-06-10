@@ -1,6 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(writexl)
+library(readr)
 source("01. saipe_dataset_creation.R")
 
 # import annual BLS Local Area Unemployment data
@@ -39,4 +40,4 @@ lf_data_2000_2010 <- bind_rows(lf_data_2000,
            str_extract(`County Name/State Abbreviation`, "^[^,]+"),
            " County$"))
 
-#write_xlsx(lf_data_2000_2010, "lf_data_2000_2010.xlsx")
+write_csv(lf_data_2000_2010, "lf_data_2000_2010.csv")

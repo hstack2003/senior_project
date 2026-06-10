@@ -1,5 +1,5 @@
 library(tidyverse)
-library(writexl)
+library(readr)
 
 # pattern to read in and name same columns from each year of data
 spec <- fwf_positions(
@@ -159,8 +159,8 @@ saipe_2000_2010 <- bind_rows(saipe_2000,
                              pattern = "\\sCounty")) |> 
   select(County, year, everything(), -county_name)
 
-# save as an excel file
-#write_xlsx(saipe_2000_2010, "saipe_2000_2010.xlsx")
+# save as a csv file
+write_csv(saipe_2000_2010, "saipe_2000_2010.csv")
 
 # create a County FIPS / Name key for later use
 county_fips_key <- saipe_2000 |> 

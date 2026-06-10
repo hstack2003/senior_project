@@ -121,4 +121,4 @@ sch_finance_2000_2010 <- sch_finance_2000_2010 |>
             by = "fips_county")
 
 # save as excel file
-write_xlsx(sch_finance_2000_2010, "sch_finance_2000_2010.xlsx")
+write_csv(sch_finance_2000_2010, "sch_finance_2000_2010.csv")

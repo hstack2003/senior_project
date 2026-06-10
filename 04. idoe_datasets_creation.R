@@ -69,6 +69,7 @@ istep_all <- istep_ela_data |>
          Tested = as.numeric(Tested),
          treated = case_when(COUNTY_NAME %in% treated_counties ~ 1,
                              COUNTY_NAME %in% control_counties ~0))
+write_csv(istep_all, "istep_all.csv")
 
 istep_did_data <- istep_all |> 
   filter(SCHOOL_YEAR_ID %in% c("2005", "2006", "2007")) |> 
@@ -158,6 +159,7 @@ eth_frl_ell_special_ed_2006_2010 <- ethnicity_frl_2006_2010 |>
          reduced_meals_percent = `Reduced Price Meals`/`TOTAL ENROLLMENT`,
          free_reduced_meal_percent = (`Free Meals`+`Reduced Price Meals`)/`TOTAL ENROLLMENT`)
 
+write_csv(eth_frl_ell_special_ed_2006_2010, "idoe_covariate_data.csv")
 # Variable Creation for Heterogeneous Effects Analysis
 
 # Proficiency Rates from 2005 (pre-treatment)

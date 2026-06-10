@@ -25,3 +25,5 @@ population_data_2000_2010 <- read_xlsx("Census_Data_Population/intercensal00s.xl
                names_to = "year",
                values_to = "population") |> 
   mutate(year = as.numeric(year))
+
+write_csv(population_data_2000_2010, "population_data.csv")
