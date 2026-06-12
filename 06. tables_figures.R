@@ -170,8 +170,7 @@ school_tab <- school_tab |>
   mutate(panel = "Panel A: School Characteristics")
 
 district_tab <- district_tab |> 
-  mutate(panel = "Panel B: District Characteristics",
-         across(where(is.numeric), ~ round(.x, 0)))
+  mutate(panel = "Panel B: District Characteristics")
 
 county_tab <- county_tab |> 
   mutate(panel = "Panel C: County Characteristics")

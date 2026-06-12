@@ -20,7 +20,7 @@ format:
         \usepackage{float}
 editor: source
 execute: 
-  cache: true
+
   error: true
   echo: false
   message: false
@@ -55,7 +55,7 @@ source("07. analysis.R")
 
 # Introduction
 
-Recently, there have been proposals to make daylight-saving time (DST) permanent, which would forever shift sunrises and sunsets later. This movement is at odds with efforts to shift school start times later to better align with the shifted adolescent circadian rhythm. Evidence from time zone boundaries, where the sunrise and sunset times differ drastically, shows that later sunsets are associated with less sleep; higher incidences of diabetes, obesity, cardiovascular disease, and breast cancer; and lower wages [@giuntella2019sunset]. The negative effects from a divergence of solar time (with which the circadian rhythm is aligned) and social time extend to academic performance. Later sunsets and sunrises are equivalent to beginning the school day earlier relative to sunrise, which is shown to have negative effects on students' wellbeing and academic performance [@wahistrom2002changing; @borisenkov2022later; @wahlstrom2017school; @haraszti2014social; @carrell2011s; @edwards2012early; @heissel2018rise]. 
+Recently, there have been proposals to make daylight-saving time (DST) permanent, which would forever shift sunrises and sunsets later. This movement is at odds with efforts to shift school start times later to better align with the shifted adolescent circadian rhythm. Evidence from time zone boundaries, where the sunrise and sunset times differ drastically, shows that later sunsets are associated with less sleep; higher incidences of diabetes, obesity, cardiovascular disease, and breast cancer; and lower wages [@giuntella2019sunset]. The negative effects from a divergence of solar time (with which the circadian rhythm is aligned) and social time extend to academic performance. Later sunsets and sunrises are equivalent to beginning the school day earlier relative to sunrise, which is shown to have negative effects on students' well-being and academic performance [@wahistrom2002changing; @borisenkov2022later; @wahlstrom2017school; @haraszti2014social; @carrell2011s; @edwards2012early; @heissel2018rise]. 
 
 This research exploits the 2006 reassignment of six Indiana counties from the Eastern to Central time zone. This policy change shifted the clocks back one hour, which had the same effect as ending Daylight-Saving Time in the fall. I use this change to examine the benefits of earlier sunsets and sunrises (and thus later relative school start times) for students in Grades 3-10. I employ a difference-in-differences model to measure the effect of the policy on class-level math and English Language Arts (ELA) proficiency rates obtained from the Indiana Department of Education (IDOE). 
 
@@ -112,7 +112,7 @@ Beyond the individual wage and economic outcomes, increased cognitive skills (as
 # Data
 
 ## Academic Outcomes
-Standardized test proficiency rates, school demographic and directory data, and school graduation and attendance rates come from the Indiana Department of Education (IDOE). The data comprise school-grade level ISTEP+ standardized test proficiency rates in English Language Arts (ELA) and math for grades 3-10 from 2005 to 2008. The outcome variable is the school-level proficiency rate, measured as the proportion of proficient students out of the total tested. Treatment is defined by being a treated county (binary treated variable is equal to 1) and the year being after the treatment (post-treatment binary variable is equal to 1). Proficiency data for classes with fewer than ten students is masked for privacy; I ignore this data in my analysis. @tbl-balance shows an example of ELA and Math proficiency rates for Grade 8. The data also include corporation-level demographic data, graduation rates, and attendance rates. 
+Standardized test proficiency rates, school demographic and directory data, and school graduation and attendance rates come from the Indiana Department of Education (IDOE). The data comprise school-grade level ISTEP+ standardized test proficiency rates in English Language Arts (ELA) and math for grades 3-10 from 2005 to 2008. The outcome variable is the school-level proficiency rate, measured as the proportion of proficient students out of the total tested. Treatment is defined by being a treated county (binary treated variable is equal to 1) and the year being after the treatment (post-treatment binary variable is equal to 1). Proficiency data for classes with fewer than ten students is masked for privacy; I ignore this data in my analysis. @tbl-balance compares treatment and control counties on a variety of school, district, and county-level outcomes. The counties are well-matched, though control counties appear slightly poorer and larger. Importantly, both groups show similar levels of per-pupil spending.
 
 
 ```{r}
@@ -125,7 +125,7 @@ summary_stats
 *Notes:* Treatment counties moved from Eastern to Central time in April 2006, while control counties remained on Eastern time. Entries report pre-treatment means and standard deviations. The difference column reports treatment minus control means, and standard errors are shown in the final column. School, district, and county characteristics are measured prior to the 2006 time-zone change. School-level variables are aggregated from administrative records, district-level variables are obtained from the Census Annual Survey of School System Finances, and county-level variables are drawn from the Census Small Area Income and Poverty Estimates and Bureau of Labor Statistics Local Area Unemployment Statistics.
 
 ## School Characteristics
-School characteristics come from two sources: the IDOE and the US Census Bureau’s Annual Survey of School System Finances. IDOE student demographic data includes school enrollment by free and reduced-price meal, English Language Learner (ELL), and special education status, as well as ethnicity. The data begins in 2006. From this data, I calculate school-level proportions of nonwhite students, students receiving free and reduced-priced meals, and English Language Learners. 
+School characteristics come from two sources: the IDOE and the US Census Bureau’s Annual Survey of School System Finances. IDOE student demographic data includes school enrollment by free and reduced-price meal status, English Language Learner (ELL) status, and special education status, as well as ethnicity. The data begins in 2006. From this data, I calculate school-level proportions of nonwhite students, students receiving free and reduced-priced meals, and English Language Learners. 
 
 The US Census Bureau’s Annual Survey of School System Finances provides district-level revenue and expenditure data for public school systems for the years 2000-2010. I calculate per-pupil total district revenue, expenditures, and instructional expenditures using the survey’s district enrollment data. 
 
@@ -134,7 +134,7 @@ County demographic data come from the U.S. Census Bureau Small Area Income and P
 
 # Empirical Framework
 
-This research takes advantage of the natural experiment in Indiana created by the movement of five counties between the Central and Eastern time zones in 2006 and 2007. Indiana counties are split between the Central and Eastern time zones: currently 12 counties are in the Central time zone, while the other 80 are on Eastern time. In April 2006, the state began to observe DST and eight counties—Starke, Pulaski, Daviess, Dubois, Knox, Martin, Pike, and Perry—moved from Eastern to Central time. In March of 2007, Pulaski moved back to Eastern time, followed by Daviess, Dubois, Knox, Martin, and Pike in November 2007. The map below illustrates the 2006 time zone change. 
+This research takes advantage of the natural experiment in Indiana created by the movement of five counties between the Central and Eastern time zones in 2006. Indiana counties are split between the Central and Eastern time zones: currently 12 counties are in the Central time zone, while the other 80 are on Eastern time. In April 2006, the state began to observe DST and eight counties—Starke, Pulaski, Daviess, Dubois, Knox, Martin, Pike, and Perry—moved from Eastern to Central time. In March of 2007, Pulaski moved back to Eastern time, followed by Daviess, Dubois, Knox, Martin, and Pike in November 2007. The map below illustrates the 2006 time zone change. 
 
 ```{r}
 #| label: fig-map
@@ -144,7 +144,7 @@ This research takes advantage of the natural experiment in Indiana created by th
 map_2006
 ```
 
-I utilize a Difference-in-Differences (DiD) model comparing Knox, Daviess, Pike, Dubois, and Martin counties (treatment) to neighboring counties that remained on Eastern time in 2005 and 2007, before and after their 2006 move to Central time. I exclude Pulaski and Starke for the sake of focusing on Indiana’s Southwestern counties. Perry remained on Eastern time and thus is excluded to ensure comparability with later models. Figure 1 shows math and ELA proficiency rates for the treatment and control counties over time. Dashed lines represent the move to the Central time zone and back to Eastern. 
+I utilize a Difference-in-Differences (DiD) model comparing Knox, Daviess, Pike, Dubois, and Martin counties (treatment) to neighboring counties that remained on Eastern time in 2005 and 2007, before and after their 2006 move to Central time. Control counties were chosen for georgraphical proximity, ensuring that they are not so far North or East that their sun clocks vary greatly from those of the treatment counties. I exclude Pulaski and Starke counties for the sake of focusing on Indiana’s Southwestern counties. Perry County remained on Eastern time and thus is excluded to ensure comparability with later models. Figure 1 shows math and ELA proficiency rates for the treatment and control counties over time. Dashed lines represent the move to the Central time zone and back to Eastern. 
 
 ```{r}
 #| label: fig-proficiency
@@ -165,10 +165,9 @@ Where $Y_{itg}$ is the proficiency rate for grade g in school i in year t, $\tex
 
 # Results
 
-I begin by running my model for all age groups. Consistent with previous research, I also run the regression on three age subgroups: elementary, middle, and high school defined as grades 3-5, 6-8, and 9-10, respectively. @tbl-main-results reports the difference-in-difference estimates for each subject and the four groups. P-values are corrected for multiple comparisons using the Holm-Bonferroni method. Each subject is considered a separate family of hypotheses for the purposes of correction. After correction, no results are significant. 
+I begin by running my model for all age groups. Consistent with previous research, I also run the regression on three age subgroups: elementary, middle, and high school defined as grades 3-5, 6-8, and 9-10, respectively. @tbl-main-results reports the difference-in-difference estimates for each subject and the four groups. P-values are corrected for multiple comparisons using the Holm-Bonferroni method. Each subject is considered a separate family of hypotheses for the purposes of correction. Before and after correction, no results are significant. 
 
-Despite this, the direction of the ELA estimates aligns with my hypotheses. The positive coefficients would indicate an increase in post-treatment proficiency, which is consistent with the theory that earlier sunrises (a side effect of moving to central time) increase academic achievement. The coefficients also increase with age, which is consistent with the theory that sunrise times and later relative school starts are more beneficial for pubescent students with shifted circadian rhythms. 
-The coeficients for math are also positive, but the decrease as age increases defies current theory.
+Despite this, the direction of the ELA estimates aligns with my hypotheses. The positive coefficients indicate an increase in post-treatment proficiency, which is consistent with the theory that earlier sunrises (a side effect of moving to central time) increase academic achievement. The coefficients also increase with age, which is consistent with the theory that sunrise times and later relative school starts are more beneficial for pubescent students with shifted circadian rhythms. The coefficients for math are also positive, but the decrease as age increases defies current theory.
 
 ```{r}
 #| label: tbl-main-results
@@ -181,9 +180,9 @@ main_results_tbl
 
 ## Heterogeneous Effects
 
-Next, I investigate heterogeneous effects on various subgroups. First, I examine the effects on lower and higher achieving schools. I classify schools as very low, low, high, or very high based on their 2005 proficiency rate quantile. Like @edwards2012early,  I expect to see a larger treatment effect on schools in the bottom of the distribution. @tbl-prof-results reports the DiD estimates for each subject, age group, and proficiency level. Again, p-values are corrected using the Holm-Bonferroni method. 
+Next, I investigate heterogeneous effects on lower and higher achieving schools. Schools are classified into quartiles based on their 2005 proficiency rates, with quartiles labeled very low, low, high, and very high proficiency. Like @edwards2012early,  I expect to see a larger treatment effect on schools in the bottom of the distribution. @tbl-prof-results reports the DiD estimates for each subject, age group, and proficiency level. Again, p-values are corrected using the Holm-Bonferroni method. 
 
-This analysis once again yields ELA estimates consistent with expectations, but insignificant with the exception of the all grades, very low proficiency estimate. Estimates are generally higher for lower proficiency schools, which aligns with the results of @edwards2012early. No math estimates are significant and the magnitude does not conisistently decrease with higher proficiency levels. 
+This analysis once again yields ELA estimates consistent with expectations, but insignificant with the exception of the all grades, very low proficiency estimate. Estimates are generally higher for lower proficiency schools, which aligns with the results of @edwards2012early. No math estimates are significant and the magnitude does not consistently decrease with higher proficiency levels. 
 
 
 ```{r}
@@ -193,21 +192,23 @@ This analysis once again yields ELA estimates consistent with expectations, but 
 prof_level_results_tbl
 ```
 
-*Notes:* Entries report DiD estimates. Standard errors clustered at the school level are reported in parentheses. Holm-adjusted (by subject) p-values are reported in the final column. Proficiency levels represent quantiles of 2005 school-level proficiency proportions (pre-treatment).
+*Notes:* Entries report DiD estimates. Standard errors clustered at the school level are reported in parentheses. Holm-adjusted (by subject) p-values are reported in the final column. Proficiency levels represent quartiles of 2005 school-level proficiency proportions (pre-treatment).
 
 ## Limitations
 
-This approach has several limitations. First, the lack of pre-treatment test data makes it hard to assess the parallel trends assumption. I attempt to overcome this with comparisons of school level demogrpahics (percent white, free meal status, English Language Learners, and special education), district spending data, and county characteristics (income, poverty, unemployment). See appendix for more detailed comparisons. 
+This approach has several limitations. First, the lack of pre-treatment test data makes it difficult to assess the parallel trends assumption. I attempt to overcome this with comparisons of school level demographics (percent white, free meal status, English Language Learners, and special education), district spending data, and county characteristics (income, poverty, unemployment). 
+
+Second, the short post-treatment period is a limitation that could mask the true effect of moving from Eastern to Central time. The first standardized test post-treatment took place at the end of the 2005-2006 school year, mere months after the counties moved. The second round of post-treatment testing was just over a year after treatment. This may not have been enough time for an effect to emerge.
 
 # Conclusion
 
-At a time when Daylight-Saving Time (DST) is hotly contested and proposals for its permanent adoption abound, it is imperative that we understand the implications of the proposed policy. It is especially important to consider its effects on education and its negation of the efforts to delay school start time. 
+At a time when Daylight-Saving Time (DST) is hotly contested and proposals for its permanent adoption abound, it is imperative that we understand the implications of the proposed policies. It is especially important to consider their effects on education and their negation of the efforts to delay school start time. 
 
 This study examines the potential effects of earlier sunrises and sunsets and makes a case for permanent standard time, or at least not permanent DST. I analyze the effect of the move of several southeastern Indiana counties from Eastern to Central time in 2006. This move made sunrises and sunsets an hour earlier, without changing anything else. It was hypothesized that this change would result in an increase in class-level standardized test proficiency rates. 
 
-I find no significant change in class-level proficiency rates when analyzed at the age-group level (elementary, middle, and high school) by subject. Subgroup analysis reveals a significant increase in ELA proficiency rates among the lowest quantile of proficiency in all grades, as well an increase in math proficiency among lowest quantile of proficiency for elementary school students. This result conflicts with previous research that suggests effects are larger for older students whose circadian rhythms shift later during puberty [@edwards2012early; @heissel2018rise]. In general, the magnitude of estimates, though insignificant, align with both previous literature and my hypothesis. Estimates increase as student age increases (consistent with the theory that later starts matter more for pubescent students) and decrease as school-level proficiency rates increase, which is consistent with the theory that educational policies have a greater impact on struggling students and the lower part of the distribution. 
+I find no significant change in class-level proficiency rates when analyzed at the age-group level (elementary, middle, and high school) by subject. Subgroup analysis reveals a significant increase in ELA proficiency rates among the lowest quantile of proficiency in all grades. This result agrees with @edwards2012early. In general, the magnitude of ELA estimates, though insignificant, align with both previous literature and my hypothesis. Estimates increase as student age increases (consistent with the theory that later starts matter more for pubescent students) and decrease as school-level proficiency rates increase, which is consistent with the theory that educational policies have a greater impact on struggling students and the lower part of the distribution. 
 
-While mostly, insignificant, my general results are fairly consistent with the literature, suggesting a need for more research. Education and academic achievement are not frequently mentioned in the DST debate, but it is clear that they should be considered. We need more research on the effects of time zone policy on education, and we need policy-makers to listen.
+While mostly insignificant, my general results are fairly consistent with the literature, suggesting a need for more research. Education and academic achievement are not frequently mentioned in the DST debate, but it is clear that they should be considered. We need more research on the effects of time zone policy on education, and we need policy-makers to listen.
 
 \newpage
 # References
