@@ -1,0 +1,70 @@
+---
+documentclass: article
+number-sections: true
+fig-pos: "H"
+tbl-pos: "H"
+keep-tex: false
+geometry: margin=1in
+fontsize: 12pt
+linestretch: 1.5
+format: 
+  pdf:
+    code-tools: true
+    embed-resources: true
+    pdf-engine: xelatex
+    mainfont: "Times New Roman"
+    tbl-pos: "H"
+    fig-pos: "H"
+    include-in-header:
+      text: |
+        \usepackage{float}
+editor: source
+execute: 
+  cache: true
+  error: true
+  echo: false
+  message: false
+  warning: false
+bibliography: references.bib
+---
+\begin{center}
+
+Here Comes the Sun: The Effect of Earlier Sunrises and Sunsets on Academic Achievement
+
+Hannah M. Stackpole, Cal Poly SLO Department of Economics 
+
+June 12, 2026
+
+Executive Summary
+
+\end{center}
+
+**1. Research Question**
+
+This paper investigates the implications of recent proposals for permanent Daylight-Saving Time (DST) and their effect on academic achievement. Permanent DST is equivalent to moving one time zone to the east, thereby shifting sunrises and sunsets and hour later. This contradicts the current understanding that later school start times (relative to sunrise) are better for students' well-being and academic outcomes.
+
+**2. Data and Methodology**
+
+I use the 2006 reassignment of several Indiana counties from the Eastern to Central time zone to ascertain the benefits of earlier sunrises and sunsets. This approximates the difference between permanent Standard Time and permanent DST. I use a Difference-in-Differences model to compare school-grade level ISTEP+ proficiency rates for Knox, Daviess, Pike, Dubois, and Martin counties (treatment) to neighboring counties that remained on Eastern time. School, grade, and year fixed effects are included to control for baseline differences in proficiency rates. 
+
+ISTEP+ outcome data come from the Indiana Department of Education, along with school demographic and enrollment data. Data to match treatment and control counties come from the US Census Bureau’s Annual Survey of School System Finances (district revenues and expenditures), the U.S. Census Bureau Small Area Income and Poverty Estimates (SAIPE) Program (median household income), and the Bureau of Labor Statistics (BLS) Local Area Unemployment Statistics (LAUS) (poverty and unemployment rates). 
+
+**3. Findings**
+
+Overall, the results provide little evidence that the 2006 policy change affected academic achievement. The key findings are summarized below. 
+
+- ELA 
+  - Overall: no statistically significant effect, but effect estimates increase with age, which aligns with current literature and the theory that school start times matter more for adolescents 
+  - Very low proficiency schools: did see a statistically significant proficiency rate improvement improvement of 4.1 percentage points (Holm-adjusted p-value 0.035)
+
+- Math
+  - Overall: no statistically significant effect, and effect estimates decrease with age, which contradicts theory and literature
+  - No statistically significant effect among schools with lower proficiency rates
+
+**4. Limitations**
+
+This research is limited by the availability of pre-treatment data. ISTEP+ outcomes are available only as far back as 2005, which provides one pre-treatment observation. This is not enough to prove similarity of treatment and control counties (parallel trends assumption). Additionally, counties only spent a year and a half on Central time, giving the policy very little time to have an effect on academic outcomes.
+
+**5. Implications and Recommendations**
+
+Though this study yields only one minor statistically significant result, it demonstrates a need for more research. The general alignment of the ELA estimates with theory and literature hint at an effect to be found. This research could be repeated with more data. Regardless, policy-makers should consider the effect of time policy on education, which could have long-term effects on students' learning and wage outcomes, as well as the country's development of human capital. 
