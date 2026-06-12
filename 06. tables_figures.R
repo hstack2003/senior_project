@@ -130,7 +130,9 @@ ggsave("proficiency_grade_year.png",
 school_bal_data <- eth_frl_ell_special_ed_2006_2010 |> 
   left_join(county_fips_key, join_by(`Schl ID` == IDOE_SCHOOL_ID)) |> 
   mutate(treat = case_when(COUNTY_NAME %in% treated_counties ~ 1,
-                           COUNTY_NAME %in% control_counties ~ 0)) |> 
+                           COUNTY_NAME %in% control_counties ~ 0),
+         across(c(white_percent, free_reduced_meal_percent, free_meals_percent, `ELL %`,`Special Education %`),
+                ~ .x * 100)) |> 
   filter(treat == 0 | treat ==1) 
 
 school_tab <- datasummary_balance(data = school_bal_data, 
@@ -145,7 +147,8 @@ district_bal_data <- sch_finance_2000_2010 |>
 
 district_tab <- datasummary_balance(data = district_bal_data, 
                                     formula = ENROLL + TOTALREV + TOTALEXP + TCURINST + PPCSTOT + PPITOTAL ~ treat,
-                                    output = "data.frame")
+                                    output = "data.frame",
+                                    fmt = fmt_decimal(digits = 0, pdigits = 3))
 
 county_bal_data <- saipe_2000_2010 |> 
   left_join(lf_data_2000_2010, 
@@ -154,7 +157,8 @@ county_bal_data <- saipe_2000_2010 |>
             join_by(County, year)) |> 
   mutate(treat = case_when(County %in% treated_counties ~ 1,
                            County %in% control_counties ~ 0),
-         weights = population) |> 
+         weights = population,
+         percent_pov = percent_pov*100) |> 
   filter(treat == 0 | treat ==1,
          year == 2005)
 
@@ -166,7 +170,8 @@ school_tab <- school_tab |>
   mutate(panel = "Panel A: School Characteristics")
 
 district_tab <- district_tab |> 
-  mutate(panel = "Panel B: District Characteristics")
+  mutate(panel = "Panel B: District Characteristics",
+         across(where(is.numeric), ~ round(.x, 0)))
 
 county_tab <- county_tab |> 
   mutate(panel = "Panel C: County Characteristics")
@@ -190,7 +195,8 @@ all_tabs <- bind_rows(school_tab, district_tab, county_tab) |>
       percent_pov = "Poverty Rate (%)",
       `Unemployment Rate (%)` = "Unemployment Rate (%)"
     )
-  )
+  ) |> 
+  rename("Statistic" = ` `)
 
 summary_stats <- all_tabs |>
   gt(groupname_col = "panel") |> 
