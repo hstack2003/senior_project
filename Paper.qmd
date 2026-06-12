@@ -40,7 +40,7 @@ Hannah M. Stackpole
 
 California Polytechnic State University, San Luis Obispo
 
-ECON 464
+ECON 464: Senior Project
 
 Spring 2026
 
@@ -55,10 +55,17 @@ source("07. analysis.R")
 
 # Introduction
 
-# Literature Review
-Recently, there have been proposals to make daylight-saving time (DST) permanent, which would forever shift sunrises and sunsets later. This movement is at odds with efforts to shift school start times later to better align with the shifted adolescent circadian rhythm. Evidence from time zone boundaries, where the sunrise and sunset times differ drastically, shows that later sunsets are associated with less sleep; higher incidences of diabetes, obesity, cardiovascular disease, and breast cancer; and lower wages [@giuntella2019sunset]. The negative effects from a divergence of solar time (with which the circadian rhythm is aligned) and social time extend to academic performance. Later sunsets and sunrises are equivalent to beginning the school day earlier relative to sunrise. Since the first studies on the effects of school start times, a large body of literature has emerged to show that earlier school start times are associated with worse student outcomes. 
+Recently, there have been proposals to make daylight-saving time (DST) permanent, which would forever shift sunrises and sunsets later. This movement is at odds with efforts to shift school start times later to better align with the shifted adolescent circadian rhythm. Evidence from time zone boundaries, where the sunrise and sunset times differ drastically, shows that later sunsets are associated with less sleep; higher incidences of diabetes, obesity, cardiovascular disease, and breast cancer; and lower wages [@giuntella2019sunset]. The negative effects from a divergence of solar time (with which the circadian rhythm is aligned) and social time extend to academic performance. Later sunsets and sunrises are equivalent to beginning the school day earlier relative to sunrise, which is shown to have negative effects on students' wellbeing and academic performance [@wahistrom2002changing; @borisenkov2022later; @wahlstrom2017school; @haraszti2014social; @carrell2011s; @edwards2012early; @heissel2018rise]. 
 
-Indeed, the first study of this type found that a start time delayed from 7:15am to 8:40am was associated with increased attendance, increased sleep durations (same bedtimes but later wake-ups), less daytime sleepiness, and fewer depressive symptoms [@wahistrom2002changing]. Though no statistically significant effect on grades was found, several subsequent studies have shown an improvement in academic performance from delayed school start times [@borisenkov2022later; @wahlstrom2017school; @haraszti2014social].
+This research exploits the 2006 move of six Indiana counties from the Eastern to Central time zone. This policy change shifted the clocks back one hour, which had the same effect as ending Daylight-Saving Time in the fall. I use this change to examine the benefits of earlier sunsets and sunrises (and thus later relative school start times) for students in Grades 3-10. I employ a difference-in-differences model to measure the effect of the policy on class-level math and English Language Arts (ELA) proficiency rates obtained from the Indiana Department of Education (IDOE). 
+
+Previous research suggests that a move to Central time would increase proficiency rates due to the benefits of later relative school start times. This effect should be larger for students in the lower half of the distribution [@edwards2012early]. I find no significant change in class-level proficiency rates when analyzed at the age-group level (elementary, middle, and high school) by subject. Subgroup analysis reveals a significant increase in ELA proficiency rates among the lowest quantile of proficiency in all grades, as well an increase in math proficiency among lowest quantile of proficiency for elementary school students. This result conflicts with previous research that suggests effects are larger for older students whose circadian rhythms shift later during puberty [@edwards2012early; @heissel2018rise]. 
+
+This research contributes to the school start time body of research, as well as the body of chronobiology research dedicated to the effects of time zone policy on circadian rhythms and health. This interdisciplinary research can inform economic and social policies, and relies the theory of human capital to underscore the importance of these policies. I begin with a review of the current literature and its relevance to the field of economics. A discussion of data sources and methods used follows. I then present my main results and analysis of heterogeneous effects, followed by a discussion of the implications and limitations. 
+
+# Literature Review
+
+Since the first studies on the effects of school start times, a large body of literature has emerged to show that earlier school start times are associated with worse student outcomes. Indeed, the first study of this type found that a start time delayed from 7:15am to 8:40am was associated with increased attendance, increased sleep durations (same bedtimes but later wake-ups), less daytime sleepiness, and fewer depressive symptoms [@wahistrom2002changing]. Though no statistically significant effect on grades was found, several subsequent studies have shown an improvement in academic performance from delayed school start times [@borisenkov2022later; @wahlstrom2017school; @haraszti2014social].
 
 Of particular interest are the causal studies on the topic. @carrell2011s exploits both the random assignment of U.S. Air Force Academy freshmen to an early first period and the academy’s start time policy changes in 2005-2007, finding that beginning class before 8:00am results in worse performance not only in that first class, but in all classes on that same day. Carrell’s results are consistent with findings that adolescent melatonin production peaks around 7:00am and stops at 8:00am. These results suggest two mechanisms by which earlier start times affect academic performance: less sleep due to an early wakeup in combination with an inability to sleep earlier, and decreased alertness in the early morning. Accordingly, @haraszti2014social differentiates between a sleep deprivation effect (social jetlag) and a drowsiness effect due to chronotype (i.e. lark vs owl tendencies). Social jetlag (but not sleep duration) was associated with worse overall performance in physiology students. Meanwhile, later chronotypes (night owls) performed worse on morning tests while earlier chronotypes performed worse on afternoon tests.
 	
@@ -151,10 +158,10 @@ proficiency_EMH_year_plot
 My specification is as follows:
 	
 $$
-{Y}_{itg} = \beta_1(\text{treated}_{ig} \times \text{post_treat}_t) + \alpha_i + \gamma_t + \delta_g + \varepsilon_{itg}
+{Y}_{itg} = \beta_1(\text{treated}_{ig} \times \text{post\_treat}_t) + \alpha_i + \gamma_t + \delta_g + \varepsilon_{itg}
 $$ {#eq-did}
 
-Where $Y_{it}$ is the proficiency rate for school i in year t, $\text{treated}_i$ is an indicator variable equal to 1 for treatment counties and 0 for control counties, and  $\text{post\_treat}_t$ is an indicator variable equal to 1 post treatment (2006 adn 2007) and equal to 0 pre treatment (2005). I include school fixed effects $\alpha_i$, and year fixed effects $\gamma_t$. $\beta_1$ is the coefficient of interest and represents the effect of shifting sunrises and sunsets an hour earlier (as a result of moving from Eastern to Central time). 
+Where $Y_{itg}$ is the proficiency rate for grade g in school i in year t, $\text{treated}_i$ is an indicator variable equal to 1 for treatment counties and 0 for control counties, and  $\text{post\_treat}_t$ is an indicator variable equal to 1 post treatment (2006 and 2007) and equal to 0 pre treatment (2005). I include school fixed effects $\alpha_i$, grade fixed effects $\delta_g$, and year fixed effects $\gamma_t$. $\beta_1$ is the coefficient of interest and represents the effect of shifting sunrises and sunsets an hour earlier (as a result of moving from Eastern to Central time). 
 
 # Results
 
@@ -192,17 +199,16 @@ prof_level_results_tbl
 
 This approach has several limitations. First, the lack of pre-treatment test data makes it hard to assess the parallel trends assumption. I attempt to overcome this with comparisons of school level demogrpahics (percent white, free meal status, English Language Learners, and special education), district spending data, and county characteristics (income, poverty, unemployment). See appendix for more detailed comparisons. 
 
-
-
 # Conclusion
 
-# Appendix
-```{r}
-#| label: tbl-free-meal-results
-#| tbl-cap: "Free Lunnch Level Results by Age Group and Subject"
-#| tbl-pos: "H"
-#free_meal_level_results_tbl
-```
+At a time when Daylight-Saving Time (DST) is hotly contested and proposals for its permanent adoption abound, it is imperative that we understand the implications of the proposed policy. It is especially important to consider its effects on education and its negation of the efforts to delay school start time. 
 
+This study examines the potential effects of earlier sunrises and sunsets and makes a case for permanent standard time, or at least not permanent DST. I analyze the effect of the move of several southeastern Indiana counties from Eastern to Central time in 2006. This move made sunrises and sunsets an hour earlier, without changing anything else. It was hypothesized that this change would result in an increase in class-level standardized test proficiency rates. 
+
+I find no significant change in class-level proficiency rates when analyzed at the age-group level (elementary, middle, and high school) by subject. Subgroup analysis reveals a significant increase in ELA proficiency rates among the lowest quantile of proficiency in all grades, as well an increase in math proficiency among lowest quantile of proficiency for elementary school students. This result conflicts with previous research that suggests effects are larger for older students whose circadian rhythms shift later during puberty [@edwards2012early; @heissel2018rise]. In general, the magnitude of estimates, though insignificant, align with both previous literature and my hypothesis. Estimates increase as student age increases (consistent with the theory that later starts matter more for pubescent students) and decrease as school-level proficiency rates increase, which is consistent with the theory that educational policies have a greater impact on struggling students and the lower part of the distribution. 
+
+While mostly, insignificant, my general results are fairly consistent with the literature, suggesting a need for more research. Education and academic achievement are not frequently mentioned in the DST debate, but it is clear that they should be considered. We need more research on the effects of time zone policy on education, and we need policy-makers to listen.
+
+\newpage
 # References
 

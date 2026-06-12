@@ -360,7 +360,12 @@ sch_finance_2000_2010 |>
              color = "black") +
   geom_vline(xintercept = back_to_eastern,
              linetype = "dashed",
-             color = "black") 
+             color = "black") +
+  labs(color = "Group",
+       x = "Year",
+       y = NULL,
+       title = "School Enrollment and Revenue/Expenditures over Time",
+       subtitle = "All measures in dollars ($) except for enrollment")
   
 ```
 
